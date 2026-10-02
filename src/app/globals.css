@@ -1,0 +1,64 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 30% 12%; /* #1A1A2E */
+    --foreground: 0 0% 100%;
+    --card: 228 35% 15%;      /* #16213E */
+    --card-foreground: 0 0% 100%;
+    --popover: 228 35% 15%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 173 50% 45%;   /* #3B9E87 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 30% 18%; /* Darker navy */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 30% 18%;
+    --muted-foreground: 240 10% 70%;
+    --accent: 173 50% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 25%;
+    --input: 240 10% 25%;
+    --ring: 173 50% 45%;
+    --radius: 1rem;
+  }
+  .dark {
+    --background: 105 30% 5%;
+    --foreground: 105 10% 98%;
+    --card: 105 30% 8%;
+    --card-foreground: 105 10% 98%;
+    --popover: 105 30% 8%;
+    --popover-foreground: 105 10% 98%;
+    --primary: 105 45% 45%;
+    --primary-foreground: 105 10% 98%;
+    --secondary: 105 30% 15%;
+    --secondary-foreground: 105 10% 90%;
+    --muted: 105 30% 12%;
+    --muted-foreground: 105 10% 65%;
+    --accent: 101 60% 50%;
+    --accent-foreground: 105 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 105 30% 15%;
+    --input: 105 30% 15%;
+    --ring: 105 45% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

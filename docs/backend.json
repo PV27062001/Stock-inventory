@@ -1,0 +1,80 @@
+
+{
+  "entities": {
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "An item in the user's home inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "category": { "type": "string", "enum": ["groceries", "medicines", "vegetables", "kitchen", "household"] },
+        "lowStockThreshold": { "type": "number", "description": "Alert when stock falls below this level" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "isMedicine": { "type": "boolean" },
+        "dosage": { 
+          "type": "object",
+          "properties": {
+            "frequencyPerDay": { "type": "number", "description": "Number of times taken per day" },
+            "notes": { "type": "string" }
+          }
+        }
+      },
+      "required": ["name", "quantity", "category"]
+    },
+    "Receipt": {
+      "title": "Grocery Receipt",
+      "description": "Stored receipt data from OCR scanning",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "totalAmount": { "type": "number" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "quantity": { "type": "number" }
+            }
+          }
+        },
+        "imageUrl": { "type": "string" }
+      }
+    },
+    "Collaboration": {
+      "title": "Collaboration",
+      "description": "Links a member to an owner's inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string", "description": "UID of the inventory owner" },
+        "ownerName": { "type": "string", "description": "Name of the owner for display" },
+        "memberEmail": { "type": "string", "description": "Email of the person being invited" },
+        "role": { "type": "string", "enum": ["viewer", "editor"], "default": "viewer" }
+      },
+      "required": ["ownerId", "memberEmail", "role"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}/inventory/{itemId}": {
+      "schema": "#/backend/entities/InventoryItem",
+      "description": "User's individual inventory items"
+    },
+    "/users/{userId}/receipts/{receiptId}": {
+      "schema": "#/backend/entities/Receipt",
+      "description": "Stored receipt scans for expense tracking"
+    },
+    "/collaborations/{collabId}": {
+      "schema": "#/backend/entities/Collaboration",
+      "description": "Global table for inventory sharing permissions"
+    }
+  }
+}

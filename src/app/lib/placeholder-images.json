@@ -1,0 +1,29 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "grocery",
+      "description": "Fresh vegetables and fruits in a basket",
+      "imageUrl": "https://picsum.photos/seed/grocery1/400/400",
+      "imageHint": "groceries vegetables"
+    },
+    {
+      "id": "medicine",
+      "description": "Medicine bottles and pills",
+      "imageUrl": "https://picsum.photos/seed/med1/400/400",
+      "imageHint": "medicines pills"
+    },
+    {
+      "id": "kitchen",
+      "description": "Kitchen supplies and grains",
+      "imageUrl": "https://picsum.photos/seed/kitchen1/400/400",
+      "imageHint": "kitchen grains"
+    },
+    {
+      "id": "profile-avatar",
+      "description": "Friendly senior person profile",
+      "imageUrl": "https://picsum.photos/seed/senior1/200/200",
+      "imageHint": "senior person"
+    }
+  ]
+}
