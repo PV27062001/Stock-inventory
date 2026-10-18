@@ -1,4 +1,5 @@
 'use server';
+import { logger } from '@/lib/logger';
 /**
  * @fileOverview A Genkit flow for a voice-activated inventory assistant.
  *
@@ -36,7 +37,7 @@ const addItemToInventoryTool = ai.defineTool(
   },
   async (input) => {
     // In a real implementation, this would call a Firestore service
-    console.log(`Action: Adding ${input.quantity} ${input.unit || ''} of ${input.itemName}`);
+    logger.debug(`Action: Adding ${input.quantity} ${input.unit || ''} of ${input.itemName}`);
     return `Successfully added ${input.quantity} ${input.unit || ''} of ${input.itemName} to your ${input.category}. I'll alert you if it drops below ${input.lowStockThreshold}.`;
   }
 );

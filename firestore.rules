@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Shop-owner allowlist. Keep in sync with NEXT_PUBLIC_ALLOWED_EMAILS.
+    // While empty, any signed-in Google account is accepted.
+    function allowedEmails() {
+      return [];
+    }
+
+    function isAllowed() {
+      return isSignedIn()
+        && (allowedEmails().size() == 0
+            || request.auth.token.email in allowedEmails());
+    }
+
+    // Shared shop data.
+    match /kirayabook_customers/{doc} {
+      allow read, write: if isAllowed();
+    }
+    match /kirayabook_rentals/{doc} {
+      allow read, write: if isAllowed();
+    }
+    match /kirayabook_inventory/{doc} {
+      allow read, write: if isAllowed();
+    }
+
+    // Personal inventory is scoped to the owning user.
+    match /inventory/{doc} {
+      allow read, update, delete: if isAllowed() && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

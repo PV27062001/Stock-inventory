@@ -1,13 +1,15 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getRental, updateRental, Rental, RentalItem } from '@/firebase/kirayabook/firestore-service';
 import { useInventory } from '@/hooks/use-inventory';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { BrandLoader } from '@/components/app/brand-loader';
 
 function EditRentalContent() {
   const router = useRouter();
@@ -28,7 +30,9 @@ function EditRentalContent() {
 
   useEffect(() => {
     if (!rentalId) return;
+    let isMounted = true;
     getRental(rentalId).then(rental => {
+        if (!isMounted) return;
         setRental(rental);
         if (rental) {
             setItems(rental.items.map((item: RentalItem) => {
@@ -44,7 +48,8 @@ function EditRentalContent() {
             setAdvanceAmount(rental.advanceAmount || 0);
             setRemarks(rental.remarks || '');
         }
-    });
+    }).catch((e) => logger.error('Failed to load rental for edit:', e));
+    return () => { isMounted = false; };
   }, [rentalId, inventory]);
 
   const handleItemChange = (index: number, field: keyof RentalItem, value: string | number) => {
@@ -99,43 +104,43 @@ function EditRentalContent() {
       router.push(`/kirayabook/customer/${customerId}`);
     } catch (e) {
       setError('Failed to update rental entry. Please try again.');
-      console.error(e);
+      logger.error(e);
     }
     setIsSaving(false);
   };
   
   if (isInventoryLoading || !rental) {
-      return <div className="text-center text-lg p-10">Loading...</div>
+      return <BrandLoader label="Loading rental…" />
   }
 
   return (
-    <div className="bg-[#1A1A2E] min-h-screen text-white font-sans max-w-md mx-auto">
-        <header className="flex items-center p-4 bg-[#16213E] sticky top-0 z-10 border-b border-gray-700/50">
+    <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
+      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
                 <ArrowLeft className="w-6 h-6" />
             </Button>
             <h1 className="text-xl font-bold ml-4">Edit Rental Entry</h1>
         </header>
 
-        <main className="p-4 pb-24">
+        <main className="p-4 pb-44">
             {/* Rented Items Section */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-3">Rented Items</h2>
                 <div className="space-y-3">
                 {items.map((item, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <div key={`${item.itemId || 'row'}-${index}`} className="flex items-center gap-2">
                          <Input
                             list="inventory-items"
                             placeholder="Item Name"
                             value={item.name}
                             onChange={(e) => handleItemChange(index, 'name', e.target.value)}
-                            className="bg-[#16213E] border-none rounded-lg text-base placeholder-gray-500 flex-grow"
+                            className="bg-card border-none rounded-lg text-base placeholder:text-muted-foreground flex-grow"
                         />
                         <Input
                             type="number"
                             value={item.quantity}
                             onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value, 10))}
-                            className="bg-[#16213E] border-none rounded-lg text-base placeholder-gray-500 w-24"
+                            className="bg-card border-none rounded-lg text-base placeholder-gray-500 w-24"
                             min="1"
                         />
                         <Button variant='destructive' size='icon' onClick={() => removeItemField(index)}><Trash2 className="w-4 h-4"/></Button>
@@ -150,27 +155,27 @@ function EditRentalContent() {
 
              {/* Date Section */}
             <div className="mb-6">
-                <label className='text-sm text-gray-400 mb-2 block'>Rental From</label>
-                <Input type="date" value={rentalFrom} onChange={e => setRentalFrom(e.target.value)} className="bg-[#16213E] border-none rounded-lg text-base"/>
+                <label className='text-sm text-muted-foreground mb-2 block'>Rental From</label>
+                <Input type="date" value={rentalFrom} onChange={e => setRentalFrom(e.target.value)} className="bg-card border-none rounded-lg text-base"/>
             </div>
 
             {/* Amount Section */}
              <div className="mb-6">
-                <label className='text-sm text-gray-400 mb-2 block'>Advance Amount</label>
-                <Input type="number" placeholder='e.g. 1000' value={advanceAmount || ''} onChange={e => setAdvanceAmount(Number(e.target.value))} className="bg-[#16213E] border-none rounded-lg text-base"/>
+                <label className='text-sm text-muted-foreground mb-2 block'>Advance Amount</label>
+                <Input type="number" placeholder='e.g. 1000' value={advanceAmount || ''} onChange={e => setAdvanceAmount(Number(e.target.value))} className="bg-card border-none rounded-lg text-base"/>
             </div>
 
              <div className="mb-6">
-                <label className='text-sm text-gray-400 mb-2 block'>Remarks</label>
-                <Textarea value={remarks} onChange={e => setRemarks(e.target.value)} className="bg-[#16213E] border-none rounded-lg text-base" placeholder="Any notes about the rental..."/>
+                <label className='text-sm text-muted-foreground mb-2 block'>Remarks</label>
+                <Textarea value={remarks} onChange={e => setRemarks(e.target.value)} className="bg-card border-none rounded-lg text-base" placeholder="Any notes about the rental..."/>
             </div>
 
-            {error && <p className="text-red-500 text-sm mt-4 text-center mb-4">{error}</p>}
+            {error && <p className="text-destructive text-sm mt-4 text-center mb-4">{error}</p>}
 
         </main>
-        <div className="fixed bottom-4 inset-x-0 px-4 max-w-md mx-auto">
-            <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-[#1D9E75] hover:bg-emerald-600 text-white font-bold h-16 rounded-xl text-lg">
-                {isSaving ? 'Updating Entry...' : 'Update Rental Entry'}
+        <div className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
+            <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-16 rounded-xl text-lg shadow-elevated">
+                {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Updating…</> : 'Update Rental Entry'}
             </Button>
         </div>
     </div>
@@ -179,7 +184,7 @@ function EditRentalContent() {
 
 export default function EditRentalPage() {
   return (
-    <Suspense fallback={<div className="text-center text-lg p-10 text-white bg-[#1A1A2E] min-h-screen">Loading...</div>}>
+    <Suspense fallback={<BrandLoader />}>
       <EditRentalContent />
     </Suspense>
   );

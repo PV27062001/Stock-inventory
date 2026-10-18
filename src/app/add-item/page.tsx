@@ -1,8 +1,9 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useInventory } from '@/firebase/firestore/use-inventory';
 import { useFileUpload } from '@/firebase/storage/use-file-upload';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
@@ -16,13 +17,17 @@ import { Switch } from "@/components/ui/switch";
 import { Timestamp } from 'firebase/firestore';
 import { Upload, Pill, Utensils, Clock } from 'lucide-react';
 import { Unit } from '@/types';
+import { BrandLoader } from '@/components/app/brand-loader';
+import { searchGroceries } from '@/lib/grocery-list';
 
 const units: Unit[] = ['g', 'kg', 'l', 'ml', 'units'];
 
-export default function AddItemPage() {
+function AddItemContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams?.get('id') ?? null;
   const { user } = useAuthUser();
-  const { addItem } = useInventory();
+  const { addItem, updateItem, items } = useInventory();
   const { upload, loading: isUploading } = useFileUpload();
   
   const [category, setCategory] = useState<'Grocery' | 'Medicine' | '' >('');
@@ -37,6 +42,7 @@ export default function AddItemPage() {
   const [receipt, setReceipt] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const numDosage = Number(dosage || 1);
@@ -49,6 +55,26 @@ export default function AddItemPage() {
         setReminderTimes([]);
     }
   }, [dailyAlert, dosage]);
+
+  // Prefill the form when editing an existing item (?id=...).
+  useEffect(() => {
+    if (!editId) return;
+    const it = items.find((i) => i.id === editId);
+    if (!it) return;
+    setCategory(it.category === 'Medicine' ? 'Medicine' : 'Grocery');
+    setName(it.name || '');
+    setQuantity(it.quantity ?? 1);
+    if (it.unit) setUnit(it.unit);
+    if (it.lowStockThreshold != null) setLowStockThreshold(it.lowStockThreshold);
+    if (it.dosage != null) setDosage(it.dosage);
+    if (it.dailyAlert != null) setDailyAlert(it.dailyAlert);
+    if (it.reminderTimes?.length) setReminderTimes(it.reminderTimes);
+    if (it.expiryDate) {
+      const raw = it.expiryDate as { toDate?: () => Date };
+      const d = raw?.toDate ? raw.toDate() : new Date(it.expiryDate as unknown as string);
+      if (!isNaN(d.getTime())) setExpiryDate(d.toISOString().slice(0, 10));
+    }
+  }, [editId, items]);
 
   const handleReminderTimeChange = (index: number, value: string) => {
     const newReminderTimes = [...reminderTimes];
@@ -74,8 +100,8 @@ export default function AddItemPage() {
         category,
         expiryDate: expiryDate ? Timestamp.fromDate(new Date(expiryDate)) : null,
         lowStockThreshold: Number(lowStockThreshold) || null,
-        imageUrl: imageUrl || null,
       };
+      if (imageUrl) newItem.imageUrl = imageUrl;
 
       if (category === 'Grocery') {
         newItem.unit = unit;
@@ -87,26 +113,33 @@ export default function AddItemPage() {
         }
       }
 
-      await addItem(newItem);
-      router.push('/inventory');
+      if (editId) {
+        await updateItem(editId, newItem);
+      } else {
+        await addItem(newItem);
+      }
+      // Land on the Inventory section (not the default Gold rates tab).
+      router.push('/inventory#inventory');
     } catch (error) {
-      console.error("Error adding item:", error);
+      logger.error("Error saving item:", error);
       setError('Item was not saved. Please check the details and try again.');
       setIsSaving(false);
     }
   };
 
+  const grocerySuggestions = category === 'Grocery' ? searchGroceries(name) : [];
+
   return (
-    <div className="min-h-screen bg-[#1A1A2E] text-white">
-      <AppHeader title="Add Inventory" subtitle="Home Stock" back switchTo="rental" />
+    <div className="min-h-screen bg-background text-foreground">
+      <AppHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" back backHref="/inventory#inventory" switchTo="rental" />
       <LoadingOverlay show={isSaving || isUploading} message="Saving inventory..." />
 
       <main className="px-4 py-5 pb-24">
-        {error && <p className="mb-4 rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-3 text-base text-red-100">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-lg bg-[#16213E] p-4">
+        {error && <p className="mb-4 rounded-lg border border-destructive/40 bg-destructive/15 px-4 py-3 text-base text-destructive">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-lg bg-card p-4">
           {/* Category Selection */}
           <div className="space-y-2">
-            <Label className="text-base text-gray-200">What are you adding?</Label>
+            <Label className="text-base text-muted-foreground">What are you adding?</Label>
             <div className="grid grid-cols-2 gap-4">
               <Button type="button" variant={category === 'Grocery' ? 'default' : 'outline'} className="h-20 flex-col gap-2 text-base" onClick={() => setCategory('Grocery')}>
                 <Utensils/>
@@ -122,9 +155,37 @@ export default function AddItemPage() {
           {category && (
             <>
              {/* Common Fields */}
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <Label htmlFor="name">{category} Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={category === 'Grocery' ? 'e.g., Tomatoes' : 'e.g., Paracetamol'} required />
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  placeholder={category === 'Grocery' ? 'e.g., Maida, Rava, Rice' : 'e.g., Paracetamol'}
+                  autoComplete="off"
+                  required
+                />
+                {category === 'Grocery' && showSuggestions && grocerySuggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-card shadow-elevated">
+                    {grocerySuggestions.map((g) => (
+                      <button
+                        type="button"
+                        key={g.name}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => { setName(g.name); setShowSuggestions(false); }}
+                        className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-secondary"
+                      >
+                        <span className="text-2xl">{g.emoji}</span>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-foreground">{g.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{g.ta}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Grocery-Specific Fields */}
@@ -136,7 +197,7 @@ export default function AddItemPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="unit">Unit</Label>
-                         <Select onValueChange={(value) => setUnit(value as Unit)} defaultValue="units">
+                         <Select onValueChange={(value) => setUnit(value as Unit)} value={unit}>
                             <SelectTrigger id="unit">
                                 <SelectValue/>
                             </SelectTrigger>
@@ -203,12 +264,20 @@ export default function AddItemPage() {
               </div>
 
               <Button type="submit" className="h-14 w-full rounded-xl bg-emerald-500 text-base font-bold hover:bg-emerald-600" disabled={isUploading || isSaving || !category}>
-                {isSaving || isUploading ? 'Saving...' : `Add ${category}`}
+                {isSaving || isUploading ? 'Saving...' : editId ? 'Update item' : `Add ${category}`}
               </Button>
             </>
           )}
         </form>
       </main>
     </div>
+  );
+}
+
+export default function AddItemPage() {
+  return (
+    <Suspense fallback={<BrandLoader />}>
+      <AddItemContent />
+    </Suspense>
   );
 }

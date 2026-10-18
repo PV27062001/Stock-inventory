@@ -1,5 +1,6 @@
-
 'use client';
+
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/hooks/use-language';
@@ -54,7 +55,7 @@ function AddItemPage() {
       await addDoc(inventoryRef, itemData);
       router.push('/');
     } catch (err) {
-      console.error("Save failed", err);
+      logger.error("Save failed", err);
     } finally {
       setIsSaving(false);
     }
@@ -77,7 +78,7 @@ function AddItemPage() {
           setCategory(item.category);
         }
       } catch (err) {
-        console.error("Scanning failed", err);
+        logger.error("Scanning failed", err);
       } finally {
         setIsScanning(false);
       }

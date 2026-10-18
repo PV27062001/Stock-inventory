@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 import {
   collection,
@@ -27,7 +28,7 @@ export const addInventoryItem = async (item: Omit<InventoryItem, 'id' | 'purchas
       imageUrl: item.imageUrl || null,
     });
   } catch (error) {
-    console.error("Error adding inventory item: ", error);
+    logger.error("Error adding inventory item: ", error);
     throw new Error("Failed to add item. Please try again.");
   }
 };
@@ -45,7 +46,7 @@ export const getInventoryItems = async (userId: string) => {
     });
     return items;
   } catch (error) {
-    console.error("Error fetching inventory items: ", error);
+    logger.error("Error fetching inventory items: ", error);
     throw new Error("Failed to fetch inventory. Please try again.");
   }
 };
@@ -58,7 +59,7 @@ export const updateInventoryItem = async (itemId: string, updates: Partial<Inven
   try {
     await updateDoc(itemRef, updates);
   } catch (error) {
-    console.error("Error updating inventory item: ", error);
+    logger.error("Error updating inventory item: ", error);
     throw new Error("Failed to update item. Please try again.");
   }
 };
@@ -71,7 +72,7 @@ export const deleteInventoryItem = async (itemId: string) => {
   try {
     await deleteDoc(itemRef);
   } catch (error) {
-    console.error("Error deleting inventory item: ", error);
+    logger.error("Error deleting inventory item: ", error);
     throw new Error("Failed to delete item. Please try again.");
   }
 };

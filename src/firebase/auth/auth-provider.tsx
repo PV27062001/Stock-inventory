@@ -1,5 +1,6 @@
-
 'use client';
+
+import { logger } from '@/lib/logger';
 
 import { createContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, getRedirectResult } from 'firebase/auth';
@@ -22,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     getRedirectResult(auth).catch((error) => {
         // Handle Errors here.
-        console.error(error);
+        logger.error(error);
     });
 
 

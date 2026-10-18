@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 
 import { firestore } from '@/firebase/setup';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query } from 'firebase/firestore';
@@ -6,6 +7,7 @@ export interface InventoryItem {
     id?: string;
     name: string;
     price: number; // Rent per day
+    imageUrl?: string; // Optional compressed photo (data URL) for visual recognition
 }
 
 const INVENTORY_COLLECTION = 'kirayabook_inventory';
@@ -24,7 +26,7 @@ export const addInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
         invalidateInventoryCache();
         return docRef.id;
     } catch (error) {
-        console.error("Error adding inventory item: ", error);
+        logger.error("Error adding inventory item: ", error);
         throw new Error('Failed to add inventory item.');
     }
 };
@@ -47,7 +49,7 @@ export const getInventoryItems = async (): Promise<InventoryItem[]> => {
                 return items;
             } catch (error) {
                 inventoryCachePromise = null;
-                console.error("Error getting inventory items: ", error);
+                logger.error("Error getting inventory items: ", error);
                 throw new Error('Failed to fetch inventory items.');
             }
         })();
@@ -62,7 +64,7 @@ export const updateInventoryItem = async (id: string, updates: Partial<Inventory
         await updateDoc(docRef, updates);
         invalidateInventoryCache();
     } catch (error) {
-        console.error("Error updating inventory item: ", error);
+        logger.error("Error updating inventory item: ", error);
         throw new Error('Failed to update inventory item.');
     }
 };
@@ -73,7 +75,7 @@ export const deleteInventoryItem = async (id: string) => {
         await deleteDoc(docRef);
         invalidateInventoryCache();
     } catch (error) {
-        console.error("Error deleting inventory item: ", error);
+        logger.error("Error deleting inventory item: ", error);
         throw new Error('Failed to delete inventory item.');
     }
 };

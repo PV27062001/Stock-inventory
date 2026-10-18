@@ -1,0 +1,54 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rentalFrom", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "customerId", "order": "ASCENDING" },
+        { "fieldPath": "rentalFrom", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "advanceAmount", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "balanceDue", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "refundDue", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kirayabook_rentals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "customerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rentalFrom", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

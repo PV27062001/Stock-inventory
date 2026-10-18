@@ -59,9 +59,9 @@ export function SearchableSelect({
 
   return (
     <div className="relative">
-      <label className="mb-2 block text-base font-medium text-gray-300">{label}</label>
+      <label className="mb-2 block text-base font-medium text-muted-foreground">{label}</label>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <Input
           role="combobox"
           aria-expanded={open}
@@ -99,14 +99,14 @@ export function SearchableSelect({
             }
           }}
           placeholder={placeholder}
-          className="h-14 rounded-lg border-gray-700 bg-[#16213E] pl-10 text-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-teal-500"
+          className="h-14 rounded-lg border-border bg-card pl-10 text-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary"
         />
       </div>
 
       {open && !disabled && (
-        <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-lg border border-gray-700 bg-[#16213E] shadow-xl">
+        <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-lg border border-border bg-card shadow-xl">
           {filteredOptions.length === 0 ? (
-            <p className="px-4 py-4 text-base text-gray-400">{emptyText}</p>
+            <p className="px-4 py-4 text-base text-muted-foreground">{emptyText}</p>
           ) : (
             filteredOptions.map((option, index) => {
               const isSelected = option.value === value;
@@ -118,15 +118,15 @@ export function SearchableSelect({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(option)}
                   className={cn(
-                    'flex min-h-14 w-full items-center gap-3 border-b border-gray-700/50 px-4 py-3 text-left last:border-b-0',
-                    isHighlighted ? 'bg-[#1A1A2E]' : 'bg-[#16213E]'
+                    'flex min-h-14 w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0',
+                    isHighlighted ? 'bg-secondary' : 'bg-card'
                   )}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-semibold text-white">{option.label}</p>
-                    {option.description && <p className="truncate text-sm text-gray-400">{option.description}</p>}
+                    <p className="truncate text-base font-semibold text-foreground">{option.label}</p>
+                    {option.description && <p className="truncate text-sm text-muted-foreground">{option.description}</p>}
                   </div>
-                  {isSelected && <Check className="h-5 w-5 text-teal-300" />}
+                  {isSelected && <Check className="h-5 w-5 text-primary" />}
                 </button>
               );
             })
