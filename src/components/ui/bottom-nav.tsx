@@ -21,14 +21,14 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-[#16213E] border-t border-t-gray-700/50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-card border-t border-t-border shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
       <div className="flex justify-around items-center h-20">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 text-gray-400 hover:text-white">
-              <item.icon className={`w-7 h-7 ${isActive ? 'text-[#1D9E75]' : ''}`} />
-              <span className={`text-xs font-medium ${isActive ? 'text-white' : ''}`}>
+            <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
+              <item.icon className={`w-7 h-7 ${isActive ? 'text-primary' : ''}`} />
+              <span className={`text-xs font-medium ${isActive ? 'text-foreground' : ''}`}>
                 {item.label}
               </span>
             </Link>

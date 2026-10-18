@@ -13,9 +13,9 @@ export default function AlertsPage() {
   const getIcon = (alert: Alert) => {
     switch (alert.type) {
       case 'low-stock':
-        return <AlertTriangle className="w-6 h-6 text-orange-500" />;
+        return <AlertTriangle className="w-6 h-6 text-brand-orange" />;
       case 'medicine':
-        return <Bell className="w-6 h-6 text-blue-500" />;
+        return <Bell className="w-6 h-6 text-brand-blue" />;
       default:
         return null;
     }
@@ -46,7 +46,7 @@ export default function AlertsPage() {
           alerts.map(alert => (
             <Card 
               key={alert.id} 
-              className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors"
+              className="p-4 flex items-center justify-between hover:bg-secondary cursor-pointer transition-colors"
               onClick={() => handleAlertClick(alert)}
             >
               <div className="flex items-center gap-4">

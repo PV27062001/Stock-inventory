@@ -1,12 +1,14 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
-import { 
-  Query, 
-  onSnapshot, 
-  QuerySnapshot, 
-  DocumentData 
+import { logger } from '@/lib/logger';
+
+import { useEffect, useRef, useState } from 'react';
+import {
+  Query,
+  onSnapshot,
+  queryEqual,
+  QuerySnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
@@ -14,14 +16,27 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Keep a stable reference so inline/unmemoized queries don't cause the
+  // onSnapshot subscription to tear down and rebuild on every render.
+  const queryRef = useRef<Query<T> | null>(null);
+  if (
+    query !== queryRef.current &&
+    !(query && queryRef.current && queryEqual(query, queryRef.current))
+  ) {
+    queryRef.current = query;
+  }
+  const stableQuery = queryRef.current;
+
   useEffect(() => {
-    if (!query) {
+    if (!stableQuery) {
+      setData([]);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     const unsubscribe = onSnapshot(
-      query,
+      stableQuery,
       (snapshot: QuerySnapshot<T>) => {
         const items = snapshot.docs.map(doc => ({
           ...doc.data(),
@@ -31,14 +46,14 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setLoading(false);
       },
       (err) => {
-        console.error(err);
+        logger.error(err);
         setError(err);
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [query]);
+  }, [stableQuery]);
 
   return { data, loading, error };
 }

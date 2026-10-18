@@ -1,0 +1,19 @@
+{
+  "name": "Sri Amman Samayal Pathirakadai",
+  "short_name": "Sri Amman",
+  "description": "Inventory and rental ledger for the shop",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F9FA",
+  "theme_color": "#1A73E8",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

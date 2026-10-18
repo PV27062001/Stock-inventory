@@ -68,6 +68,8 @@ export const translations = {
     ledger: 'Ledger',
     ledgerDescription: 'Manage rentals, customers, and bookkeeping.',
     openLedger: 'Open Ledger',
+    loading: 'Loading…',
+    noItems: 'No items yet.',
   },
   ta: {
     home: 'முகப்பு',
@@ -135,5 +137,7 @@ export const translations = {
     ledger: 'லெட்ஜர்',
     ledgerDescription: 'வாடகை, வாடிக்கையாளர்கள் மற்றும் புத்தகலை நிர்வகிக்கவும்.',
     openLedger: 'லெட்ஜரை திறக்கவும்',
+    loading: 'ஏற்றுகிறது…',
+    noItems: 'இன்னும் பொருட்கள் இல்லை.',
   }
 };

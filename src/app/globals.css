@@ -5,47 +5,52 @@
 
 @layer base {
   :root {
-    --background: 240 30% 12%; /* #1A1A2E */
-    --foreground: 0 0% 100%;
-    --card: 228 35% 15%;      /* #16213E */
-    --card-foreground: 0 0% 100%;
-    --popover: 228 35% 15%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 173 50% 45%;   /* #3B9E87 */
+    --background: 210 17% 98%;      /* #F8F9FA Google grey-50 */
+    --foreground: 220 9% 13%;       /* #202124 Google grey-900 */
+    --card: 0 0% 100%;              /* #FFFFFF */
+    --card-foreground: 220 9% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 13%;
+    --primary: 214 82% 51%;         /* #1A73E8 Google blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 30% 18%; /* Darker navy */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 240 30% 18%;
-    --muted-foreground: 240 10% 70%;
-    --accent: 173 50% 45%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 63% 50%;
+    --secondary: 210 17% 95%;       /* #F1F3F4 Google grey-100 */
+    --secondary-foreground: 220 9% 13%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 213 5% 39%; /* #5F6368 Google grey-700 */
+    --accent: 214 82% 95%;          /* light blue tint */
+    --accent-foreground: 214 82% 40%;
+    --destructive: 4 71% 50%;       /* #D93025 Google red */
     --destructive-foreground: 0 0% 100%;
-    --border: 240 10% 25%;
-    --input: 240 10% 25%;
-    --ring: 173 50% 45%;
+    --border: 216 8% 87%;           /* #DADCE0 Google grey-300 */
+    --input: 216 8% 87%;
+    --ring: 214 82% 51%;
     --radius: 1rem;
+    --chart-1: 214 82% 51%;         /* blue */
+    --chart-2: 136 65% 34%;         /* green */
+    --chart-3: 41 100% 49%;         /* amber */
+    --chart-4: 28 95% 53%;          /* orange */
+    --chart-5: 280 68% 60%;         /* purple */
   }
   .dark {
-    --background: 105 30% 5%;
-    --foreground: 105 10% 98%;
-    --card: 105 30% 8%;
-    --card-foreground: 105 10% 98%;
-    --popover: 105 30% 8%;
-    --popover-foreground: 105 10% 98%;
-    --primary: 105 45% 45%;
-    --primary-foreground: 105 10% 98%;
-    --secondary: 105 30% 15%;
-    --secondary-foreground: 105 10% 90%;
-    --muted: 105 30% 12%;
-    --muted-foreground: 105 10% 65%;
-    --accent: 101 60% 50%;
-    --accent-foreground: 105 10% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 105 30% 15%;
-    --input: 105 30% 15%;
-    --ring: 105 45% 45%;
+    --background: 222 18% 11%;
+    --foreground: 210 20% 98%;
+    --card: 222 16% 16%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 16% 16%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 214 90% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 14% 22%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 222 14% 20%;
+    --muted-foreground: 217 12% 65%;
+    --accent: 222 14% 22%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 14% 24%;
+    --input: 222 14% 24%;
+    --ring: 214 90% 60%;
   }
 }
 
@@ -55,10 +60,51 @@
   }
   body {
     @apply bg-background text-foreground font-body;
+    background-image: radial-gradient(1100px 520px at 100% -8%, rgba(26, 115, 232, 0.06), transparent 60%);
+    background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
+  }
+  /* Smooth, premium micro-interactions on tappable elements. */
+  a, button {
+    transition: transform 0.15s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, filter 0.18s ease;
   }
 }
 
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Printable A5 rental bill (see src/components/kirayabook/printable-bill.tsx). */
+.printable-bill {
+  width: 148mm;
+  height: 209.5mm;
+  padding: 6mm;
+  font-family: 'Noto Sans Tamil', 'Inter', sans-serif;
+}
+.printable-bill .bill-box {
+  font-variant-numeric: tabular-nums;
+}
+
+@page {
+  size: A5 portrait;
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-bill,
+  .printable-bill * {
+    visibility: visible;
+  }
+  .printable-bill {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

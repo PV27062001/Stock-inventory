@@ -1,15 +1,21 @@
-
 'use client';
+
+import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCustomerById, updateCustomer, Customer } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service'; // Assuming this exists and works
-import { ArrowLeft, Camera, Upload } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMemo } from 'react'; // Import useMemo
 import React from 'react';
+import { BrandLoader } from '@/components/app/brand-loader';
+import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
+import { PROFESSIONS } from '@/lib/professions';
+import { MobileField } from '@/components/kirayabook/mobile-field';
+import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function EditCustomerPage() {
   const router = useRouter();
@@ -20,6 +26,7 @@ export default function EditCustomerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showProfessionSuggestions, setShowProfessionSuggestions] = useState(false);
   
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
@@ -43,14 +50,18 @@ export default function EditCustomerPage() {
         setIsLoading(false);
     }).catch(e => {
         setError('Failed to load customer data.');
-        console.error(e);
+        logger.error(e);
         setIsLoading(false);
     });
   }, [customerId]);
 
   const handleUpdate = async () => {
-      if(!customer.name || !customer.mobile) {
-          setError('Name and mobile number are required.');
+      if(!customer.name) {
+          setError('Name is required.');
+          return;
+      }
+      if (!isValidMobile(customer.mobile || '')) {
+          setError(mobileError(customer.mobile || ''));
           return;
       }
       setIsSaving(true);
@@ -74,14 +85,14 @@ export default function EditCustomerPage() {
         uploadedPhotos.forEach(p => {
             // Ensure the key is a valid property of Customer
             if (p.key === 'photoUrl' || p.key === 'aadhaarPhotoUrl' || p.key === 'panPhotoUrl' || p.key === 'drivingLicencePhotoUrl') {
-                 newPhotoUrls[p.key as keyof Customer] = p.url;
+                 newPhotoUrls[p.key] = p.url;
             }
         });
 
-        const updates: Partial<Customer> = {
-            ...customer,
-            ...newPhotoUrls,
-        };
+        // Firestore rejects undefined, which "Undo verified" can produce.
+        const updates = Object.fromEntries(
+            Object.entries({ ...customer, ...newPhotoUrls }).filter(([, v]) => v !== undefined)
+        ) as Partial<Customer>;
 
         await updateCustomer(customerId, updates);
         
@@ -89,7 +100,7 @@ export default function EditCustomerPage() {
         router.back();
     } catch (e) {
         setError('Failed to save changes. Please try again.');
-        console.error(e);
+        logger.error(e);
         setIsSaving(false);
     }
   }
@@ -98,47 +109,93 @@ export default function EditCustomerPage() {
     setCustomer(prev => ({...prev, [field]: value}))
   }
 
+  const professionQuery = customer.profession || '';
+  const professionSuggestions = professionQuery
+    ? PROFESSIONS.filter((p) => p.en.toLowerCase().includes(professionQuery.toLowerCase()) || p.ta.includes(professionQuery))
+    : PROFESSIONS;
+
   if (isLoading) {
-    return <div className="text-center text-lg p-10 text-gray-400">Loading customer...</div>;
+    return <BrandLoader label="Loading customer…" />;
   }
 
   return (
-    <div className="bg-[#1A1A2E] min-h-screen text-white font-sans max-w-md mx-auto">
-        <header className="flex items-center p-4 bg-[#16213E] sticky top-0 z-10 border-b border-gray-700/50">
+    <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
+        <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="w-6 h-6" />
             </Button>
             <h1 className="text-xl font-bold ml-4">Edit Customer</h1>
         </header>
 
-        <main className="p-4 pb-24">
+        <main className="p-4 pb-44">
             <div className="space-y-4">
                 <div className="flex justify-center mb-8">
                     <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
-                    <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-[#16213E] flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-600">
-                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (customer.photoUrl ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-8 h-8 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
+                    <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
+                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-8 h-8 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
                     </button>
                 </div>
 
                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Name</label>
-                    <Input value={customer.name || ''} onChange={(e) => handleInputChange('name', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                    <label className="text-sm text-muted-foreground mb-2 block">Name</label>
+                    <Input value={customer.name || ''} onChange={(e) => handleInputChange('name', e.target.value)} className="bg-background border-border rounded-lg text-base" />
                 </div>
                 <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Mobile</label>
-                    <Input value={customer.mobile || ''} onChange={(e) => handleInputChange('mobile', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                    <label className="text-sm text-muted-foreground mb-2 block">Mobile</label>
+                    <MobileField
+                        value={customer.mobile || ''}
+                        onChange={(v) => handleInputChange('mobile', v)}
+                        verifiedAt={customer.mobileVerifiedAt}
+                        onVerifiedChange={(verifiedAt) =>
+                            setCustomer((prev) => ({
+                                ...prev,
+                                mobileVerifiedAt: verifiedAt,
+                                mobileVerifyMethod: verifiedAt ? 'contacted' : undefined,
+                            }))
+                        }
+                        showError={!!error}
+                        className="bg-background border-border rounded-lg text-base h-14 w-full px-4"
+                    />
+                </div>
+                <div className="relative">
+                    <label className="text-sm text-muted-foreground mb-2 block">Profession</label>
+                    <Input
+                        placeholder="e.g. Mason, Painter, Electrician"
+                        value={customer.profession || ''}
+                        onChange={(e) => handleInputChange('profession', e.target.value)}
+                        onFocus={() => setShowProfessionSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowProfessionSuggestions(false), 150)}
+                        autoComplete="off"
+                        className="bg-background border-border rounded-lg text-base"
+                    />
+                    {showProfessionSuggestions && professionSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-card shadow-elevated">
+                            {professionSuggestions.map((p) => (
+                                <button
+                                    type="button"
+                                    key={p.en}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => { handleInputChange('profession', p.en); setShowProfessionSuggestions(false); }}
+                                    className="flex w-full flex-col items-start gap-0.5 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-secondary"
+                                >
+                                    <p className="font-semibold text-foreground">{p.en}</p>
+                                    <p className="text-xs text-muted-foreground">{p.ta}</p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Address</label>
-                    <Input value={customer.address || ''} onChange={(e) => handleInputChange('address', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                    <label className="text-sm text-muted-foreground mb-2 block">Address</label>
+                    <Input value={customer.address || ''} onChange={(e) => handleInputChange('address', e.target.value)} className="bg-background border-border rounded-lg text-base" />
                 </div>
                 
                 <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Aadhaar</label>
+                    <label className="text-sm text-muted-foreground mb-2 block">Aadhaar</label>
                     <div className='flex items-center gap-2'>
-                        <Input value={customer.aadhaar || ''} onChange={(e) => handleInputChange('aadhaar', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                        <Input value={customer.aadhaar || ''} onChange={(e) => handleInputChange('aadhaar', e.target.value)} className="bg-background border-border rounded-lg text-base" />
                         <input type="file" accept="image/*" ref={aadhaarInputRef} onChange={e => setAadhaarFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="border-gray-700 bg-[#16213E] hover:bg-[#16213E]/80"><Upload className='w-5 h-5 text-gray-400'/></Button>
+                        <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
                     </div>
                     <div className='mt-2'>
                         {aadhaarFile ? <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg" /> 
@@ -147,11 +204,11 @@ export default function EditCustomerPage() {
                 </div>
 
                 <div>
-                    <label className="text-sm text-gray-400 mb-2 block">PAN</label>
+                    <label className="text-sm text-muted-foreground mb-2 block">PAN</label>
                     <div className='flex items-center gap-2'>
-                        <Input value={customer.pan || ''} onChange={(e) => handleInputChange('pan', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                        <Input value={customer.pan || ''} onChange={(e) => handleInputChange('pan', e.target.value)} className="bg-background border-border rounded-lg text-base" />
                         <input type="file" accept="image/*" ref={panInputRef} onChange={e => setPanFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="border-gray-700 bg-[#16213E] hover:bg-[#16213E]/80"><Upload className='w-5 h-5 text-gray-400'/></Button>
+                        <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
                     </div>
                     <div className='mt-2'>
                         {panFile ? <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg" /> 
@@ -160,11 +217,11 @@ export default function EditCustomerPage() {
                 </div>
 
                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Driving Licence</label>
+                    <label className="text-sm text-muted-foreground mb-2 block">Driving Licence</label>
                     <div className='flex items-center gap-2'>
-                        <Input value={customer.drivingLicence || ''} onChange={(e) => handleInputChange('drivingLicence', e.target.value)} className="bg-[#1A1A2E] border-gray-700 rounded-lg text-base" />
+                        <Input value={customer.drivingLicence || ''} onChange={(e) => handleInputChange('drivingLicence', e.target.value)} className="bg-background border-border rounded-lg text-base" />
                         <input type="file" accept="image/*" ref={licenceInputRef} onChange={e => setLicenceFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="border-gray-700 bg-[#16213E] hover:bg-[#16213E]/80"><Upload className='w-5 h-5 text-gray-400'/></Button>
+                        <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
                     </div>
                     <div className='mt-2'>
                         {licenceFile ? <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg" /> 
@@ -173,11 +230,11 @@ export default function EditCustomerPage() {
                 </div>
             </div>
 
-             {error && <p className="text-red-500 text-sm mt-4 text-center mb-4">{error}</p>}
+             {error && <p className="text-destructive text-sm mt-4 text-center mb-4">{error}</p>}
 
-            <div className="fixed bottom-4 inset-x-0 px-4 max-w-md mx-auto">
-                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-16 rounded-xl text-lg">
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+            <div className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
+                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-16 rounded-xl text-lg shadow-elevated">
+                    {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving…</> : 'Save Changes'}
                 </Button>
             </div>
         </main>
