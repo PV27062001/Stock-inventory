@@ -15,7 +15,14 @@ export const metadata: Metadata = {
   title: 'Sri Amman - Inventory & Ledger',
   description: 'Inventory and rental ledger for the shop',
   manifest: '/manifest.webmanifest',
-  icons: { icon: '/icon.svg', apple: '/icon.svg' },
+  // iOS ignores SVG home-screen icons, so it gets a PNG; browsers use the SVG / PNG favicon.
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+  },
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Sri Amman' },
 };
 
