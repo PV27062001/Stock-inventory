@@ -1,10 +1,13 @@
 /**
- * Feature flags, driven by env vars (set in `.env`, restart `npm run dev` / rebuild after changing).
+ * Feature flags, driven by env vars (set in `.env` / Vercel, then restart `npm run dev` or redeploy).
+ * SRIAMMAN_* vars are inlined at build time via the `env` list in next.config.
  *
- * NEXT_PUBLIC_ENABLE_RENTALS=true  -> rentals are on (screens, nav tab, stats, create/edit/complete/delete).
- * Anything else (including unset)   -> rental UI is hidden, rental routes 404 and rental writes throw.
+ * SRIAMMAN_ENABLE_RENTALS=true (or 1 / yes, any case) -> rentals are on (screens, nav tab, stats, create/edit/complete/delete).
+ * Anything else (including unset)                     -> rental UI is hidden, rental routes 404 and rental writes throw.
  */
-export const RENTALS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_RENTALS === 'true';
+const isOn = (value?: string) => ['true', '1', 'yes'].includes((value || '').trim().replace(/^["']|["']$/g, '').toLowerCase());
+
+export const RENTALS_ENABLED = isOn(process.env.SRIAMMAN_ENABLE_RENTALS);
 
 /** Rental routes, blocked by `src/middleware.ts` when rentals are disabled. */
 export const RENTAL_ROUTE_PREFIXES = [

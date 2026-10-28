@@ -1,7 +1,7 @@
-// Only these Google accounts may use the app. Set NEXT_PUBLIC_ALLOWED_EMAILS in
+// Only these Google accounts may use the app. Set SRIAMMAN_ALLOWED_EMAILS in
 // .env as a comma-separated list, e.g. "amma@gmail.com,appa@gmail.com".
 // This is a UX gate only — Firestore rules must enforce the same list server-side.
-const RAW = process.env.NEXT_PUBLIC_ALLOWED_EMAILS || '';
+const RAW = process.env.SRIAMMAN_ALLOWED_EMAILS || '';
 
 export const ALLOWED_EMAILS = RAW.split(',')
   .map((email) => email.trim().toLowerCase())
