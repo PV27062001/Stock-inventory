@@ -9,6 +9,7 @@ import { ArrowLeft, Clock3, DollarSign, CheckCircle, AlertTriangle, Trash2, Load
 import { formatMobile, isVerificationStale } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { RENTALS_ENABLED } from '@/lib/features';
 import { BrandLoader, DataLoader } from '@/components/app/brand-loader';
 import { IdCardViewer } from '@/components/app/id-card-viewer';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
@@ -60,7 +61,7 @@ export default function CustomerDetailPage() {
   }, [customerId]);
 
   useEffect(() => {
-    if (!customerId) {
+    if (!customerId || !RENTALS_ENABLED) {
       setIsRentalsLoading(false);
       return;
     }
@@ -147,6 +148,7 @@ export default function CustomerDetailPage() {
           )}
         </div>
 
+        {RENTALS_ENABLED && (
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary mb-3">
@@ -177,8 +179,9 @@ export default function CustomerDetailPage() {
             <p className="mt-1 text-2xl font-bold text-destructive">₹{Math.max(0, totalPending).toFixed(0)}</p>
           </div>
         </div>
+        )}
 
-        {totalRefundOwed > 0 && (
+        {RENTALS_ENABLED && totalRefundOwed > 0 && (
           <div className="mb-6 rounded-2xl border border-brand-amber/30 bg-brand-amber/10 p-4 shadow-soft flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">To Return</p>
@@ -213,6 +216,7 @@ export default function CustomerDetailPage() {
             </div>
         </div>
 
+        {RENTALS_ENABLED && (
         <section className="mt-6">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -255,8 +259,10 @@ export default function CustomerDetailPage() {
             </div>
           )}
         </section>
+        )}
       </main>
 
+       {RENTALS_ENABLED && (
        <footer className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
             <Link href={`/kirayabook/rentals?customerId=${customerId}`}>
                 <Button className="w-full h-14 rounded-xl text-lg font-bold shadow-elevated">
@@ -264,6 +270,7 @@ export default function CustomerDetailPage() {
                 </Button>
             </Link>
         </footer>
+       )}
 
       {confirmDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-6" onClick={() => !isDeleting && setConfirmDelete(false)}>

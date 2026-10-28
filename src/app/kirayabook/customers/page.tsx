@@ -4,16 +4,44 @@ import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Phone, Search, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Plus, Phone, Search, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
 import { formatMobile, isVerificationStale, toCallNumber, toWhatsAppNumber } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Customer, getAllCustomers } from '@/firebase/kirayabook/firestore-service';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 
+const FAVOURITES_KEY = 'kirayabook.customers.favourites';
+const RECENTS_KEY = 'kirayabook.customers.recents';
+const MAX_RECENTS = 5;
+const INDEX_LETTERS = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
+
 const getInitials = (name: string) => {
   const names = name.trim().split(' ');
   return names.length > 1 ? `${names[0][0]}${names[1][0]}` : names[0]?.[0] || '';
+};
+
+const getGroupLetter = (name: string) => {
+  const first = name.trim().charAt(0).toUpperCase();
+  return first >= 'A' && first <= 'Z' ? first : '#';
+};
+
+// Favourites/recents are per device. localStorage can be unavailable (private mode), so fail quietly.
+const readIds = (key: string): string[] => {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeIds = (key: string, ids: string[]) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(ids));
+  } catch {
+    // ignore
+  }
 };
 
 export default function CustomersPage() {
@@ -22,6 +50,8 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [viewer, setViewer] = useState<Customer | null>(null);
+  const [favouriteIds, setFavouriteIds] = useState<string[]>([]);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -41,24 +71,137 @@ export default function CustomersPage() {
         }
       });
 
+    setFavouriteIds(readIds(FAVOURITES_KEY));
+    setRecentIds(readIds(RECENTS_KEY));
+
     return () => {
       isMounted = false;
     };
   }, []);
 
+  const toggleFavourite = (customerId: string) => {
+    setFavouriteIds((prev) => {
+      const next = prev.includes(customerId) ? prev.filter((id) => id !== customerId) : [...prev, customerId];
+      writeIds(FAVOURITES_KEY, next);
+      return next;
+    });
+  };
+
+  const openCustomer = (customerId: string) => {
+    setRecentIds((prev) => {
+      const next = [customerId, ...prev.filter((id) => id !== customerId)].slice(0, MAX_RECENTS);
+      writeIds(RECENTS_KEY, next);
+      return next;
+    });
+    router.push(`/kirayabook/customer/${customerId}`);
+  };
+
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const displayedCustomers = useMemo(() => {
+    const sorted = [...customers].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     if (!normalizedSearch) {
-      return customers;
+      return sorted;
     }
 
-    return customers.filter((customer) =>
+    return sorted.filter((customer) =>
       customer.name.toLowerCase().includes(normalizedSearch) ||
       customer.mobile.includes(normalizedSearch) ||
       (customer.profession || '').toLowerCase().includes(normalizedSearch)
     );
   }, [customers, normalizedSearch]);
+
+  // A-Z sections like a phone's contacts list; names not starting with a letter go under '#'.
+  const groups = useMemo(() => {
+    const map = new Map<string, Customer[]>();
+    displayedCustomers.forEach((customer) => {
+      const letter = getGroupLetter(customer.name);
+      map.set(letter, [...(map.get(letter) || []), customer]);
+    });
+    return INDEX_LETTERS.filter((letter) => map.has(letter)).map((letter) => ({ letter, customers: map.get(letter)! }));
+  }, [displayedCustomers]);
+
+  const customerById = useMemo(() => new Map(customers.map((c) => [c.id, c])), [customers]);
+  const favourites = favouriteIds.map((id) => customerById.get(id)).filter((c): c is Customer => !!c);
+  const recents = recentIds.map((id) => customerById.get(id)).filter((c): c is Customer => !!c);
+  const showQuickSections = !normalizedSearch && !isLoading;
+
+  const jumpToLetter = (letter: string) => {
+    document.getElementById(`letter-${letter}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const renderCustomer = (customer: Customer, keyPrefix: string) => {
+    const isFavourite = !!customer.id && favouriteIds.includes(customer.id);
+    return (
+      <div
+        key={`${keyPrefix}-${customer.id}`}
+        onClick={() => customer.id && openCustomer(customer.id)}
+        className="bg-card border border-border rounded-2xl p-4 flex items-center shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated cursor-pointer"
+      >
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setViewer(customer); }}
+          aria-label={`View ${customer.name} photo`}
+          className="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-[#4C9AFF] to-[#1A73E8] flex items-center justify-center text-white font-bold mr-3 shadow-soft"
+        >
+          {isUsablePhoto(customer.photoUrl) ? (
+            <img src={customer.photoUrl} alt={customer.name} className="w-full h-full object-cover" />
+          ) : (
+            getInitials(customer.name)
+          )}
+        </button>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-semibold text-foreground truncate">{customer.name}</h2>
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Phone className="h-3.5 w-3.5 text-primary" />
+            {formatMobile(customer.mobile)}
+            {customer.mobileVerifiedAt && !isVerificationStale(customer.mobileVerifiedAt) && (
+              <CheckCircle2 className="h-3.5 w-3.5 text-brand-green" aria-label="Number verified" />
+            )}
+            {customer.mobileVerifiedAt && isVerificationStale(customer.mobileVerifiedAt) && (
+              <AlertTriangle
+                className="h-3.5 w-3.5 text-brand-amber"
+                aria-label="Number not confirmed in over 6 months"
+              />
+            )}
+          </p>
+          {customer.profession && (
+            <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              {customer.profession}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); if (customer.id) toggleFavourite(customer.id); }}
+            aria-label={isFavourite ? `Remove ${customer.name} from favourites` : `Add ${customer.name} to favourites`}
+            className="h-9 w-9 flex items-center justify-center rounded-full text-primary hover:bg-primary/15"
+          >
+            <Star className={`h-4 w-4 ${isFavourite ? 'fill-current' : ''}`} />
+          </button>
+          <a
+            href={`tel:${toCallNumber(customer.mobile)}`}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Call ${customer.name}`}
+            className="h-9 w-9 flex items-center justify-center rounded-full bg-primary/15 text-primary"
+          >
+            <Phone className="h-4 w-4" />
+          </a>
+          <a
+            href={`https://wa.me/${toWhatsAppNumber(customer.mobile)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`WhatsApp ${customer.name}`}
+            className="h-9 w-9 flex items-center justify-center rounded-full bg-[#25D366]/15 text-[#25D366]"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -102,6 +245,20 @@ export default function CustomersPage() {
           />
         </div>
 
+        {showQuickSections && favourites.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-primary mb-2">Favourites</h2>
+            <div className="space-y-3">{favourites.map((customer) => renderCustomer(customer, 'fav'))}</div>
+          </section>
+        )}
+
+        {showQuickSections && recents.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-primary mb-2">Recents</h2>
+            <div className="space-y-3">{recents.map((customer) => renderCustomer(customer, 'recent'))}</div>
+          </section>
+        )}
+
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((item) => (
@@ -136,52 +293,39 @@ export default function CustomersPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {displayedCustomers.map((customer) => (
-              <div
-                key={customer.id}
-                onClick={() => router.push(`/kirayabook/customer/${customer.id}`)}
-                className="bg-card border border-border rounded-2xl p-4 flex items-center shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated cursor-pointer"
-              >
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setViewer(customer); }}
-                  aria-label={`View ${customer.name} photo`}
-                  className="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-[#4C9AFF] to-[#1A73E8] flex items-center justify-center text-white font-bold mr-3 shadow-soft"
-                >
-                  {isUsablePhoto(customer.photoUrl) ? (
-                    <img src={customer.photoUrl} alt={customer.name} className="w-full h-full object-cover" />
-                  ) : (
-                    getInitials(customer.name)
-                  )}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold text-foreground truncate">{customer.name}</h2>
-                  <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Phone className="h-3.5 w-3.5 text-primary" />
-                    {formatMobile(customer.mobile)}
-                    {customer.mobileVerifiedAt && !isVerificationStale(customer.mobileVerifiedAt) && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-brand-green" aria-label="Number verified" />
-                    )}
-                    {customer.mobileVerifiedAt && isVerificationStale(customer.mobileVerifiedAt) && (
-                      <AlertTriangle
-                        className="h-3.5 w-3.5 text-brand-amber"
-                        aria-label="Number not confirmed in over 6 months"
-                      />
-                    )}
-                  </p>
-                  {customer.profession && (
-                    <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      {customer.profession}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/15 text-primary">Saved</span>
-              </div>
+          <div className="space-y-6">
+            {groups.map((group) => (
+              <section key={group.letter} id={`letter-${group.letter}`} className="scroll-mt-24">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-primary mb-2">{group.letter}</h2>
+                <div className="space-y-3">{group.customers.map((customer) => renderCustomer(customer, 'all'))}</div>
+              </section>
             ))}
           </div>
         )}
       </main>
+
+      {/* A-Z side index: tap a letter to jump to that section */}
+      {!isLoading && groups.length > 0 && (
+        <nav
+          aria-label="Jump to letter"
+          className="fixed top-1/2 -translate-y-1/2 z-10 flex flex-col items-center right-[max(0px,calc(50vw-14rem))]"
+        >
+          {INDEX_LETTERS.map((letter) => {
+            const hasGroup = groups.some((group) => group.letter === letter);
+            return (
+              <button
+                key={letter}
+                type="button"
+                disabled={!hasGroup}
+                onClick={() => jumpToLetter(letter)}
+                className={`w-4 text-[10px] font-semibold leading-4 ${hasGroup ? 'text-primary' : 'text-muted-foreground/40'}`}
+              >
+                {letter}
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* WhatsApp-style photo viewer with quick call / message actions */}
       {viewer && (

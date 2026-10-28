@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BookOpen, Warehouse, Users, BookCheck } from 'lucide-react';
+import { RENTALS_ENABLED } from '@/lib/features';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -16,7 +17,7 @@ export function BottomNav() {
   const navItems = [
     { href: '/kirayabook', icon: BookOpen, label: 'Ledger' },
     { href: '/kirayabook/customers', icon: Users, label: 'Customers' },
-    { href: '/kirayabook/rentals', icon: BookCheck, label: 'Rentals' },
+    ...(RENTALS_ENABLED ? [{ href: '/kirayabook/rentals', icon: BookCheck, label: 'Rentals' }] : []),
     { href: '/kirayabook/inventory', icon: Warehouse, label: 'Inventory' },
   ];
 
