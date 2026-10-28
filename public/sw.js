@@ -1,12 +1,12 @@
 // Simple offline-first service worker for the PWA.
-const CACHE = 'sriamman-v1';
+const CACHE = 'sriamman-v2';
 
 // Pre-cache the app entry so it can open with no network.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(['/', '/manifest.webmanifest', '/icon.svg']))
+      .then((cache) => cache.addAll(['/', '/manifest.webmanifest', '/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/apple-touch-icon.png']))
       .catch(() => {})
   );
   self.skipWaiting();
