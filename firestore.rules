@@ -7,7 +7,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Shop-owner allowlist. Keep in sync with NEXT_PUBLIC_ALLOWED_EMAILS.
+    // Shop-owner allowlist. Keep in sync with SRIAMMAN_ALLOWED_EMAILS.
     // While empty, any signed-in Google account is accepted.
     function allowedEmails() {
       return [];

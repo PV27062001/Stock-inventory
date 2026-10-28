@@ -1,5 +1,27 @@
+// App env vars use the SRIAMMAN_ prefix instead of NEXT_PUBLIC_. Next only exposes
+// NEXT_PUBLIC_* to the browser on its own, so each name is listed here to be inlined
+// at build time. Changing a value (locally or on Vercel) needs a restart / redeploy.
+// Keep this list in sync with next.config.ts.
+const SRIAMMAN_ENV_KEYS = [
+  'SRIAMMAN_FIREBASE_API_KEY',
+  'SRIAMMAN_FIREBASE_AUTH_DOMAIN',
+  'SRIAMMAN_FIREBASE_PROJECT_ID',
+  'SRIAMMAN_FIREBASE_STORAGE_BUCKET',
+  'SRIAMMAN_FIREBASE_MESSAGING_SENDER_ID',
+  'SRIAMMAN_FIREBASE_APP_ID',
+  'SRIAMMAN_ALLOWED_EMAILS',
+  'SRIAMMAN_ENABLE_RENTALS',
+  'SRIAMMAN_SHOP_NAME_TA',
+  'SRIAMMAN_SHOP_NAME',
+  'SRIAMMAN_SHOP_TAGLINE_TA',
+  'SRIAMMAN_SHOP_TAGLINE',
+  'SRIAMMAN_SHOP_ADDRESS',
+  'SRIAMMAN_SHOP_PHONE',
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: Object.fromEntries(SRIAMMAN_ENV_KEYS.map((key) => [key, process.env[key] ?? ''])),
   reactStrictMode: true,
   // Don't advertise the framework, and never ship readable sources to the browser.
   poweredByHeader: false,

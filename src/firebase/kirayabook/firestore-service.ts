@@ -10,7 +10,7 @@ import { RENTALS_ENABLED } from '@/lib/features';
 
 const assertRentalsEnabled = () => {
   if (!RENTALS_ENABLED) {
-    throw new Error('Rentals are disabled (NEXT_PUBLIC_ENABLE_RENTALS is not true).');
+    throw new Error('Rentals are disabled (SRIAMMAN_ENABLE_RENTALS is not true).');
   }
 };
 
