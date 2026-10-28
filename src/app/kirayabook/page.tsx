@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { signOut } from '@/firebase/auth/auth-service';
+import { RENTALS_ENABLED } from '@/lib/features';
 
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
@@ -43,11 +44,17 @@ export default function LedgerHomePage() {
 
   useEffect(() => {
     getAllCustomers().then(setCustomers).catch((e) => logger.error('Failed to fetch customers:', e));
-    getLedgerTotals().then(setTotals).catch((e) => logger.error('Failed to fetch totals:', e));
+    if (RENTALS_ENABLED) {
+      getLedgerTotals().then(setTotals).catch((e) => logger.error('Failed to fetch totals:', e));
+    }
   }, []);
 
   // Entries list: latest 30, or only the chosen day. Never the whole collection.
   useEffect(() => {
+    if (!RENTALS_ENABLED) {
+      setIsLoading(false);
+      return;
+    }
     let cancelled = false;
     setIsLoading(true);
     (selectedDate ? getRentalsByDate(selectedDate) : getRecentRentals(30))
@@ -141,6 +148,7 @@ export default function LedgerHomePage() {
 
       <main className="max-w-md mx-auto pb-24">
         {/* Stats Cards */}
+        {RENTALS_ENABLED && (
         <div className="grid grid-cols-2 gap-4 p-4">
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
             <p className="text-xs font-semibold text-primary uppercase tracking-wide">Money Received</p>
@@ -151,8 +159,9 @@ export default function LedgerHomePage() {
             <p className="text-2xl font-bold text-destructive mt-2">₹{pendingAmount.toFixed(0)}</p>
           </Link>
         </div>
+        )}
 
-        {refundOwed > 0 && (
+        {RENTALS_ENABLED && refundOwed > 0 && (
           <div className="px-4 pb-2">
             <div className="rounded-2xl border border-brand-amber/30 bg-brand-amber/10 p-4 shadow-soft flex items-center justify-between">
               <div>
@@ -206,6 +215,7 @@ export default function LedgerHomePage() {
         </div>
 
         {/* Recent Entries */}
+        {RENTALS_ENABLED && (
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold">
@@ -252,9 +262,11 @@ export default function LedgerHomePage() {
             )}
           </div>
         </div>
+        )}
       </main>
 
       {/* Floating add button (above the bottom nav) for quick new rental */}
+      {RENTALS_ENABLED && (
       <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-6">
         <div className="flex justify-end">
           <Link
@@ -266,6 +278,7 @@ export default function LedgerHomePage() {
           </Link>
         </div>
       </div>
+      )}
     </div>
   );
 }

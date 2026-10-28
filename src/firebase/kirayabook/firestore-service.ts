@@ -6,6 +6,13 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { firestore, storage } from '@/firebase/setup';
 import { logger } from '@/lib/logger';
+import { RENTALS_ENABLED } from '@/lib/features';
+
+const assertRentalsEnabled = () => {
+  if (!RENTALS_ENABLED) {
+    throw new Error('Rentals are disabled (NEXT_PUBLIC_ENABLE_RENTALS is not true).');
+  }
+};
 
 // Constants for collection names
 const CUSTOMERS_COLLECTION = 'kirayabook_customers';
@@ -166,6 +173,7 @@ export interface Rental {
 }
 
 export const addRental = async (rentalData: Omit<Rental, 'id'>): Promise<void> => {
+  assertRentalsEnabled();
   try {
     await addDoc(collection(firestore, RENTALS_COLLECTION), rentalData);
     invalidateRentalsCache();
@@ -324,6 +332,7 @@ export const getRentalsByCustomerId = async (customerId: string): Promise<Rental
 };
 
 export const updateRental = async (rentalId: string, updates: Partial<Rental>): Promise<void> => {
+  assertRentalsEnabled();
   try {
     const docRef = doc(firestore, RENTALS_COLLECTION, rentalId);
     await updateDoc(docRef, updates);
@@ -335,6 +344,7 @@ export const updateRental = async (rentalId: string, updates: Partial<Rental>): 
 };
 
 export const deleteRental = async (rentalId: string): Promise<void> => {
+  assertRentalsEnabled();
   try {
     await deleteDoc(doc(firestore, RENTALS_COLLECTION, rentalId));
     invalidateRentalsCache();
