@@ -24,6 +24,10 @@ const SRIAMMAN_ENV_KEYS = [
 const nextConfig: NextConfig = {
   env: Object.fromEntries(SRIAMMAN_ENV_KEYS.map((key) => [key, process.env[key] ?? ''])),
   reactStrictMode: true,
+  // Genkit pulls in OpenTelemetry's Node SDK, which optionally require()s exporters
+  // (e.g. @opentelemetry/exporter-jaeger) that aren't installed. Bundling it makes webpack
+  // fail to resolve them; leaving it to Node at runtime keeps those optional imports optional.
+  serverExternalPackages: ['@opentelemetry/sdk-node'],
   // Don't advertise the framework, and never ship readable sources to the browser.
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
