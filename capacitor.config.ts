@@ -19,6 +19,9 @@ const config: CapacitorConfig = {
   },
   android: {
     appendUserAgent: 'SriAmmanApp',
+    // Android 15+ draws apps edge to edge, putting the header under the status bar and the
+    // bottom nav under the system navigation buttons. 'auto' keeps the page between the bars.
+    adjustMarginsForEdgeToEdge: 'auto',
     // Never allow plain-http content inside the app.
     allowMixedContent: false,
     webContentsDebuggingEnabled: false,
