@@ -1,25 +1,116 @@
+# ============================================================
+# SimpleStock / Sri Amman — Next.js + Firebase + Genkit + Capacitor (Android)
+# Android/Gradle-specific ignores live in android/.gitignore.
+# This repo is PUBLIC: never commit secrets, keys or personal data.
+# ============================================================
+
+# ---------- Dependencies ----------
 node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ---------- Next.js / build output ----------
 .next/
 /out/
 /build/
+/dist/
+.turbo/
+.swc/
 
-# Local environment variables
-.env*
-!.env.example
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# TypeScript build info
+# ---------- TypeScript ----------
 *.tsbuildinfo
 
-# Deployment output
-.vercel/
+# ---------- Testing / coverage ----------
+/coverage/
+.nyc_output/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
-# Workspace metadata
-/.modified
-# Firebase rules are maintained in the Firebase Console (they contain the allowed emails). Never commit them: the repo is public.
+# ---------- Logs ----------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ---------- Environment variables & secrets ----------
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+keystore.properties
+# Firebase / Google service credentials
+google-services.json
+GoogleService-Info.plist
+service-account*.json
+*-firebase-adminsdk-*.json
+credentials.json
+
+# ---------- Firebase ----------
+# Rules are maintained in the Firebase Console (they contain the allowed emails).
 firestore.rules
 storage.rules
+database.rules.json
+.firebase/
+.firebaserc.local
+firebase-debug.log*
+firebase-debug.*.log*
+firestore-debug.log*
+ui-debug.log*
+database-debug.log*
+pubsub-debug.log*
+# Local emulator exports
+/emulator-data/
+/firebase-export-*/
+
+# ---------- Genkit (AI flows) ----------
+.genkit/
+
+# ---------- Vercel ----------
+.vercel/
+
+# ---------- Capacitor / Android outputs (extra safety; see android/.gitignore) ----------
+*.apk
+*.aab
+*.idsig
+
+# ---------- Editors / IDEs ----------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# ---------- OS files ----------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ---------- Misc / local tooling ----------
+/.modified
+*.tmp
+*.bak
+.cache/
+.eslintcache
