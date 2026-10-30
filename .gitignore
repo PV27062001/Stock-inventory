@@ -20,3 +20,6 @@ pnpm-debug.log*
 
 # Workspace metadata
 /.modified
+# Real Firebase rules contain the allowed emails; only the *.example templates are committed.
+firestore.rules
+storage.rules
