@@ -1,6 +1,12 @@
 import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
+import {
+  isNativeApp,
+  checkNativeNotifyPermission,
+  requestNativeNotifyPermission,
+  showNativeNotification,
+} from '@/lib/native';
 
 const ENABLED_KEY = 'notifications-enabled';
 
@@ -10,8 +16,11 @@ export function useNotifications() {
   const [enabled, setEnabledState] = useState(true);
 
   useEffect(() => {
-    // Guard: some in-app webviews don't expose the Notification API.
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (isNativeApp()) {
+      // The Android WebView has no Notification API; ask the native plugin instead.
+      checkNativeNotifyPermission().then(setPermission).catch((e) => logger.warn('Notification permission check failed:', e));
+    } else if (typeof window !== 'undefined' && 'Notification' in window) {
+      // Guard: some in-app webviews don't expose the Notification API.
       setPermission(Notification.permission);
     }
     if (typeof window !== 'undefined') {
@@ -28,6 +37,13 @@ export function useNotifications() {
   };
 
   const requestPermission = async () => {
+    if (isNativeApp()) {
+      const status = await requestNativeNotifyPermission();
+      setPermission(status);
+      if (status === 'granted') setEnabled(true);
+      return;
+    }
+
     if (!('Notification' in window)) {
       logger.error("This browser does not support desktop notification");
       return;
@@ -41,6 +57,11 @@ export function useNotifications() {
   const showNotification = (title: string, options?: NotificationOptions) => {
     if (permission !== 'granted' || !enabled) {
       logger.warn("Notification permission not granted or notifications muted.");
+      return;
+    }
+
+    if (isNativeApp()) {
+      showNativeNotification(title, options?.body).catch((e) => logger.error('Failed to show notification:', e));
       return;
     }
 

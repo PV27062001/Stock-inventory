@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getCustomerById, updateCustomer, Customer } from '@/firebase/kirayabook/firestore-service';
+import { getCustomerById, updateCustomer, Customer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service'; // Assuming this exists and works
 import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -99,7 +99,7 @@ export default function EditCustomerPage() {
         setIsSaving(false);
         router.back();
     } catch (e) {
-        setError('Failed to save changes. Please try again.');
+        setError(e instanceof CustomerTooLargeError ? e.message : 'Failed to save changes. Please try again.');
         logger.error(e);
         setIsSaving(false);
     }

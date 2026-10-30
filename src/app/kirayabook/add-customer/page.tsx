@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { addCustomer } from '@/firebase/kirayabook/firestore-service';
+import { addCustomer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -77,7 +77,7 @@ export default function AddCustomerPage() {
 
       router.push('/kirayabook');
     } catch (e) {
-      setError('Failed to save customer. Please try again.');
+      setError(e instanceof CustomerTooLargeError ? e.message : 'Failed to save customer. Please try again.');
       logger.error(e);
     }
     setIsSaving(false);

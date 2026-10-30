@@ -1,8 +1,9 @@
 import { logger } from '@/lib/logger';
 
-import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut, setPersistence, browserLocalPersistence, UserCredential } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithCredential, signOut as firebaseSignOut, setPersistence, browserLocalPersistence, UserCredential } from 'firebase/auth';
 import { auth } from '@/firebase/setup';
 import { isEmailAllowed } from '@/lib/allowed-users';
+import { isNativeApp } from '@/lib/native';
 import { clearKirayabookCaches } from '@/firebase/kirayabook/firestore-service';
 
 const provider = new GoogleAuthProvider();
@@ -31,6 +32,20 @@ export const signInWithGoogle = async () => {
   // Ensure auth persistence so tokens are cached across sessions
   await setPersistence(auth, browserLocalPersistence);
 
+  // Google blocks its sign-in page inside app WebViews, so the Android app signs in with
+  // the native Google account picker and hands the ID token to the web Firebase SDK.
+  if (isNativeApp()) {
+    const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+    const result = await FirebaseAuthentication.signInWithGoogle();
+    const idToken = result.credential?.idToken;
+    if (!idToken) {
+      throw new Error('Google sign-in did not return a token.');
+    }
+    const nativeCredential = await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+    await enforceAllowlist(nativeCredential);
+    return;
+  }
+
   let credential: UserCredential;
   try {
     // Try popup first (preferred UX). Some browsers/blockers may block popups,
@@ -51,6 +66,11 @@ export const signInWithGoogle = async () => {
 export const signOut = async () => {
   try {
     await firebaseSignOut(auth);
+    if (isNativeApp()) {
+      // Also forget the native Google account so the picker shows again next time.
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      await FirebaseAuthentication.signOut();
+    }
     // Drop cached shop data so the next account never sees it.
     clearKirayabookCaches();
   } catch (error) {

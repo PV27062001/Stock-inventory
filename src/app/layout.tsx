@@ -10,6 +10,7 @@ import { AlertProvider } from '@/components/alert-provider';
 import { PWARegister } from '@/components/pwa-register';
 import { InstallBanner } from '@/components/install-banner';
 import { NotificationWatcher } from '@/components/app/notification-watcher';
+import { AppUpdateBanner } from '@/components/app/app-update-banner';
 
 export const metadata: Metadata = {
   title: 'Sri Amman - Inventory & Ledger',
@@ -65,6 +66,7 @@ export default function RootLayout({
                 </div>
                 <NotificationWatcher />
                 <InstallBanner />
+                <AppUpdateBanner />
                 <Toaster />
               </AlertProvider>
             </LanguageProvider>
