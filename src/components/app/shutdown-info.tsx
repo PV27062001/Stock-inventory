@@ -53,7 +53,7 @@ export function ShutdownInfo() {
           <Zap className="h-6 w-6 text-brand-amber" />
         </div>
         <div>
-          <p className="text-lg font-bold text-foreground">Power Shutdown</p>
+          <p className="text-base font-bold text-foreground">Power Shutdown</p>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" /> Thondamuthur, Coimbatore
           </p>
@@ -87,7 +87,7 @@ export function ShutdownInfo() {
           <button onClick={() => load(true)} className="mt-3 text-primary font-semibold">Try again</button>
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card p-6 text-center">
+        <div className="rounded-2xl border border-border bg-card p-4 text-center">
           <p className="text-foreground font-medium">No recent shutdown news found.</p>
           <p className="mt-1 text-sm text-muted-foreground">
             No planned power cuts reported for your area right now.

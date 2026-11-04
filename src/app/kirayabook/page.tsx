@@ -152,11 +152,11 @@ export default function LedgerHomePage() {
         <div className="grid grid-cols-2 gap-4 p-4">
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
             <p className="text-xs font-semibold text-primary uppercase tracking-wide">Money Received</p>
-            <p className="text-2xl font-bold text-primary mt-2">₹{moneyReceived.toFixed(0)}</p>
+            <p className="text-xl font-bold text-primary mt-2">₹{moneyReceived.toFixed(0)}</p>
           </div>
           <Link href="/kirayabook/unsettled" className="rounded-2xl border border-destructive/20 bg-gradient-to-br from-destructive/10 to-transparent p-4 shadow-soft hover:shadow-elevated transition-shadow block active:scale-[0.98]">
             <p className="text-xs font-semibold text-destructive uppercase tracking-wide">Pending</p>
-            <p className="text-2xl font-bold text-destructive mt-2">₹{pendingAmount.toFixed(0)}</p>
+            <p className="text-xl font-bold text-destructive mt-2">₹{pendingAmount.toFixed(0)}</p>
           </Link>
         </div>
         )}
@@ -168,7 +168,7 @@ export default function LedgerHomePage() {
                 <p className="text-xs font-semibold text-brand-amber uppercase tracking-wide">To Return</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Owed back to customers</p>
               </div>
-              <p className="text-2xl font-bold text-brand-amber">₹{refundOwed.toFixed(0)}</p>
+              <p className="text-xl font-bold text-brand-amber">₹{refundOwed.toFixed(0)}</p>
             </div>
           </div>
         )}
@@ -218,7 +218,7 @@ export default function LedgerHomePage() {
         {RENTALS_ENABLED && (
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">
+            <h2 className="text-base font-bold">
               {selectedDate ? `Entries on ${format(selectedDate, 'dd MMM yyyy')}` : 'Recent entries'}
             </h2>
             <div className="flex items-center gap-1">
@@ -267,14 +267,14 @@ export default function LedgerHomePage() {
 
       {/* Floating add button (above the bottom nav) for quick new rental */}
       {RENTALS_ENABLED && (
-      <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-6">
+      <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
         <div className="flex justify-end">
           <Link
             href="/kirayabook/new-rental"
             aria-label="New rental"
-            className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
           >
-            <Plus className="h-8 w-8" />
+            <Plus className="h-6 w-6" />
           </Link>
         </div>
       </div>

@@ -80,11 +80,11 @@ export default function CustomerDetailPage() {
   }
 
   if (error) {
-    return <div className="text-center text-lg p-10 text-destructive">{error}</div>;
+    return <div className="text-center text-base p-10 text-destructive">{error}</div>;
   }
 
   if (!customer) {
-    return <div className="text-center text-lg p-10 text-muted-foreground">Customer not found.</div>;
+    return <div className="text-center text-base p-10 text-muted-foreground">Customer not found.</div>;
   }
 
   const getInitials = (name: string) => {
@@ -106,7 +106,7 @@ export default function CustomerDetailPage() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-xl font-bold ml-4">{customer.name}</h1>
+        <h1 className="text-lg font-bold ml-4">{customer.name}</h1>
         <Button variant="link" onClick={() => router.push(`/kirayabook/edit-customer/${customerId}`)} className="ml-auto text-primary hover:text-primary/80">
           Edit
         </Button>
@@ -124,7 +124,7 @@ export default function CustomerDetailPage() {
               {getInitials(customer.name)}
             </div>
           )}
-          <h2 className="text-2xl font-bold mt-4">{customer.name}</h2>
+          <h2 className="text-xl font-bold mt-4">{customer.name}</h2>
           <p className="flex items-center gap-1.5 text-muted-foreground">
             {formatMobile(customer.mobile)}
             {customer.mobileVerifiedAt && !isVerificationStale(customer.mobileVerifiedAt) && (
@@ -155,28 +155,28 @@ export default function CustomerDetailPage() {
               <CheckCircle className="w-5 h-5" />
             </div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Total Rentals</p>
-            <p className="mt-1 text-2xl font-bold text-foreground">{totalRentals}</p>
+            <p className="mt-1 text-xl font-bold text-foreground">{totalRentals}</p>
           </div>
           <div className="rounded-2xl border border-brand-amber/20 bg-gradient-to-br from-brand-amber/10 to-transparent p-4 shadow-soft">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-amber/15 text-brand-amber mb-3">
               <Clock3 className="w-5 h-5" />
             </div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Active</p>
-            <p className="mt-1 text-2xl font-bold text-brand-amber">{activeRentals}</p>
+            <p className="mt-1 text-xl font-bold text-brand-amber">{activeRentals}</p>
           </div>
           <div className="rounded-2xl border border-brand-green/20 bg-gradient-to-br from-brand-green/10 to-transparent p-4 shadow-soft">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-green/15 text-brand-green mb-3">
               <DollarSign className="w-5 h-5" />
             </div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Advance Paid</p>
-            <p className="mt-1 text-2xl font-bold text-brand-green">₹{totalAdvancePaid.toFixed(0)}</p>
+            <p className="mt-1 text-xl font-bold text-brand-green">₹{totalAdvancePaid.toFixed(0)}</p>
           </div>
           <div className="rounded-2xl border border-destructive/20 bg-gradient-to-br from-destructive/10 to-transparent p-4 shadow-soft">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/15 text-destructive mb-3">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Pending</p>
-            <p className="mt-1 text-2xl font-bold text-destructive">₹{Math.max(0, totalPending).toFixed(0)}</p>
+            <p className="mt-1 text-xl font-bold text-destructive">₹{Math.max(0, totalPending).toFixed(0)}</p>
           </div>
         </div>
         )}
@@ -187,7 +187,7 @@ export default function CustomerDetailPage() {
               <p className="text-xs uppercase tracking-wide text-muted-foreground">To Return</p>
               <p className="text-xs text-muted-foreground mt-0.5">Advance was more than the bill</p>
             </div>
-            <p className="text-2xl font-bold text-brand-amber">₹{totalRefundOwed.toFixed(0)}</p>
+            <p className="text-xl font-bold text-brand-amber">₹{totalRefundOwed.toFixed(0)}</p>
           </div>
         )}
 
@@ -221,7 +221,7 @@ export default function CustomerDetailPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm text-muted-foreground">Rental history</p>
-              <h2 className="text-xl font-semibold">Recent activity</h2>
+              <h2 className="text-lg font-semibold">Recent activity</h2>
             </div>
             <Link href={`/kirayabook/rentals?customerId=${customerId}`} className="text-primary text-sm font-semibold hover:text-primary/80">
               View all
@@ -265,7 +265,7 @@ export default function CustomerDetailPage() {
        {RENTALS_ENABLED && (
        <footer className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
             <Link href={`/kirayabook/rentals?customerId=${customerId}`}>
-                <Button className="w-full h-14 rounded-xl text-lg font-bold shadow-elevated">
+                <Button className="w-full h-12 rounded-xl text-base font-bold shadow-elevated">
                     View all rentals
                 </Button>
             </Link>
@@ -273,12 +273,12 @@ export default function CustomerDetailPage() {
        )}
 
       {confirmDelete && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-6" onClick={() => !isDeleting && setConfirmDelete(false)}>
-          <div className="w-full max-w-sm rounded-2xl bg-card p-6 shadow-elevated" onClick={(e) => e.stopPropagation()}>
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-              <Trash2 className="h-7 w-7" />
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4" onClick={() => !isDeleting && setConfirmDelete(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-card p-4 shadow-elevated" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+              <Trash2 className="h-6 w-6" />
             </div>
-            <h3 className="text-center text-lg font-bold text-foreground">Delete {customer.name}?</h3>
+            <h3 className="text-center text-base font-bold text-foreground">Delete {customer.name}?</h3>
             <p className="mt-2 text-center text-sm text-muted-foreground">This removes the customer permanently. Their rental records will remain.</p>
             <div className="mt-6 flex gap-3">
               <Button variant="outline" className="h-12 flex-1 rounded-xl" onClick={() => setConfirmDelete(false)} disabled={isDeleting}>

@@ -124,7 +124,7 @@ export default function EditCustomerPage() {
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="w-6 h-6" />
             </Button>
-            <h1 className="text-xl font-bold ml-4">Edit Customer</h1>
+            <h1 className="text-lg font-bold ml-4">Edit Customer</h1>
         </header>
 
         <main className="p-4 pb-44">
@@ -132,7 +132,7 @@ export default function EditCustomerPage() {
                 <div className="flex justify-center mb-8">
                     <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
                     <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
-                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-8 h-8 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
+                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
                     </button>
                 </div>
 
@@ -154,7 +154,7 @@ export default function EditCustomerPage() {
                             }))
                         }
                         showError={!!error}
-                        className="bg-background border-border rounded-lg text-base h-14 w-full px-4"
+                        className="bg-background border-border rounded-lg text-base h-12 w-full px-4"
                     />
                 </div>
                 <div className="relative">
@@ -233,7 +233,7 @@ export default function EditCustomerPage() {
              {error && <p className="text-destructive text-sm mt-4 text-center mb-4">{error}</p>}
 
             <div className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
-                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-16 rounded-xl text-lg shadow-elevated">
+                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 rounded-xl text-base shadow-elevated">
                     {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving…</> : 'Save Changes'}
                 </Button>
             </div>

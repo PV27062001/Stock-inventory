@@ -42,7 +42,7 @@ export function AppHeader({ title, subtitle, back = false, backHref, switchTo }:
         )}
         <div className="min-w-0 flex-1">
           {subtitle && <p className="text-xs font-semibold uppercase tracking-wide text-primary">{subtitle}</p>}
-          <h1 className="truncate text-xl font-bold">{title}</h1>
+          <h1 className="truncate text-lg font-bold">{title}</h1>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

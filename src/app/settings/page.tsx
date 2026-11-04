@@ -53,7 +53,7 @@ function SettingsPage() {
   };
 
   return (
-    <main className="p-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24">
+    <main className="p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24">
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={goBack}
@@ -62,14 +62,14 @@ function SettingsPage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">{t('settings')}</h1>
+        <h1 className="text-[22px] font-bold">{t('settings')}</h1>
       </div>
 
       {/* Family Sharing Section */}
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Users className="w-6 h-6 text-primary" />
-          <h2 className="text-xl font-bold">{t('members')}</h2>
+          <h2 className="text-lg font-bold">{t('members')}</h2>
         </div>
         
         <div className="space-y-3">
@@ -89,7 +89,7 @@ function SettingsPage() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="w-full h-14 rounded-2xl border-dashed border-2 gap-2 text-primary">
+              <Button variant="outline" className="w-full h-12 rounded-2xl border-dashed border-2 gap-2 text-primary">
                 <Plus className="w-5 h-5" />
                 {t('addMember')}
               </Button>
@@ -109,11 +109,11 @@ function SettingsPage() {
                       placeholder="email@example.com" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-14 pl-12 rounded-xl"
+                      className="h-12 pl-12 rounded-xl"
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddMember} className="w-full h-14 text-lg rounded-xl">
+                <Button onClick={handleAddMember} className="w-full h-12 text-base rounded-xl">
                   {t('invite')}
                 </Button>
               </div>
@@ -126,13 +126,13 @@ function SettingsPage() {
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Languages className="w-6 h-6 text-primary" />
-          <h2 className="text-xl font-bold">{t('language')}</h2>
+          <h2 className="text-lg font-bold">{t('language')}</h2>
         </div>
-        <Card className="p-2 border-none shadow-sm flex rounded-[2rem] overflow-hidden bg-card">
+        <Card className="p-2 border-none shadow-sm flex rounded-2xl overflow-hidden bg-card">
           <button
             onClick={() => setLanguage('en')}
             className={cn(
-              "flex-1 h-20 rounded-[1.5rem] text-2xl font-bold transition-all",
+              "flex-1 h-12 rounded-xl text-base font-bold transition-all",
               language === 'en' ? "bg-primary text-primary-foreground shadow-lg" : "bg-transparent text-muted-foreground"
             )}
           >
@@ -141,7 +141,7 @@ function SettingsPage() {
           <button
             onClick={() => setLanguage('ta')}
             className={cn(
-              "flex-1 h-20 rounded-[1.5rem] text-2xl font-bold transition-all font-body",
+              "flex-1 h-12 rounded-xl text-base font-bold transition-all font-body",
               language === 'ta' ? "bg-primary text-primary-foreground shadow-lg" : "bg-transparent text-muted-foreground"
             )}
           >
@@ -152,13 +152,13 @@ function SettingsPage() {
 
       {/* User Info */}
       <section className="mb-8">
-        <Card className="p-6 border-none shadow-sm flex items-center justify-between bg-card">
+        <Card className="p-4 border-none shadow-sm flex items-center justify-between bg-card">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <User className="w-7 h-7" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <User className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">{t('profile')}</h3>
+              <h3 className="text-base font-bold">{t('profile')}</h3>
               <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
@@ -168,13 +168,13 @@ function SettingsPage() {
 
       {/* App Options */}
       <section className="space-y-4 mb-10">
-        <Card className="p-6 border-none shadow-sm bg-card">
+        <Card className="p-4 border-none shadow-sm bg-card">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-              <Home className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Home className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold">Start Screen</h3>
+              <h3 className="text-base font-semibold">Start Screen</h3>
               <p className="text-sm text-muted-foreground">Which screen opens first</p>
             </div>
           </div>
@@ -188,7 +188,7 @@ function SettingsPage() {
                 key={opt.id}
                 onClick={() => setStartPage(opt.id)}
                 className={cn(
-                  'h-14 rounded-xl text-base font-semibold transition-all',
+                  'h-12 rounded-xl text-base font-semibold transition-all',
                   startPage === opt.id
                     ? 'bg-primary text-primary-foreground shadow'
                     : 'bg-secondary text-muted-foreground'
@@ -200,48 +200,48 @@ function SettingsPage() {
           </div>
         </Card>
 
-        <Card className="p-6 border-none shadow-sm flex items-center justify-between bg-card">
+        <Card className="p-4 border-none shadow-sm flex items-center justify-between bg-card">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-              <Bell className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Bell className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold">Notifications</h3>
+              <h3 className="text-base font-semibold">Notifications</h3>
               <p className="text-sm text-muted-foreground">Low-stock & reminder alerts</p>
             </div>
           </div>
           {permission === 'granted' ? (
-            <Switch className="scale-125" checked={enabled} onCheckedChange={setEnabled} />
+            <Switch checked={enabled} onCheckedChange={setEnabled} />
           ) : (
             <Button onClick={requestPermission} className="rounded-xl">Enable</Button>
           )}
         </Card>
 
-        <Card className="p-6 border-none shadow-sm flex items-center justify-between bg-card">
+        <Card className="p-4 border-none shadow-sm flex items-center justify-between bg-card">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
-              <Moon className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Moon className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-semibold">Dark Mode</h3>
+            <h3 className="text-base font-semibold">Dark Mode</h3>
           </div>
-          <Switch className="scale-125" checked={isDark} onCheckedChange={setDark} />
+          <Switch checked={isDark} onCheckedChange={setDark} />
         </Card>
 
         <Card 
-          className="p-6 border-none shadow-sm flex items-center justify-between text-destructive bg-card cursor-pointer active:scale-95 transition-all"
+          className="p-4 border-none shadow-sm flex items-center justify-between text-destructive bg-card cursor-pointer active:scale-95 transition-all"
           onClick={handleLogout}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
-              <LogOut className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+              <LogOut className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-semibold">{t('logout')}</h3>
+            <h3 className="text-base font-semibold">{t('logout')}</h3>
           </div>
         </Card>
       </section>
 
       <div className="text-center text-muted-foreground opacity-50 pb-10">
-        <p className="text-lg font-bold">Sri Amman v1.0.0</p>
+        <p className="text-base font-bold">Sri Amman v1.0.0</p>
         <p>Made with love for parents</p>
       </div>
     </main>

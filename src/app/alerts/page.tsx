@@ -28,9 +28,9 @@ export default function AlertsPage() {
   };
 
   return (
-    <main className="p-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
+    <main className="p-4 pt-[max(1rem,env(safe-area-inset-top))]">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Your Alerts</h1>
+        <h1 className="text-[22px] font-bold tracking-tight text-primary">Your Alerts</h1>
         <p className="text-muted-foreground font-medium">
           Here's what needs your attention today.
         </p>
@@ -39,7 +39,7 @@ export default function AlertsPage() {
       <div className="space-y-4">
         {alerts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-lg text-muted-foreground">All clear!</p>
+            <p className="text-base text-muted-foreground">All clear!</p>
             <p>You have no alerts right now.</p>
           </div>
         ) : (

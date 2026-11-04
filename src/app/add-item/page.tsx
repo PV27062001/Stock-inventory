@@ -141,11 +141,11 @@ function AddItemContent() {
           <div className="space-y-2">
             <Label className="text-base text-muted-foreground">What are you adding?</Label>
             <div className="grid grid-cols-2 gap-4">
-              <Button type="button" variant={category === 'Grocery' ? 'default' : 'outline'} className="h-20 flex-col gap-2 text-base" onClick={() => setCategory('Grocery')}>
+              <Button type="button" variant={category === 'Grocery' ? 'default' : 'outline'} className="h-12 flex-col gap-2 text-base" onClick={() => setCategory('Grocery')}>
                 <Utensils/>
                 Grocery
               </Button>
-               <Button type="button" variant={category === 'Medicine' ? 'default' : 'outline'} className="h-20 flex-col gap-2 text-base" onClick={() => setCategory('Medicine')}>
+               <Button type="button" variant={category === 'Medicine' ? 'default' : 'outline'} className="h-12 flex-col gap-2 text-base" onClick={() => setCategory('Medicine')}>
                 <Pill/>
                 Medicine
               </Button>
@@ -177,7 +177,7 @@ function AddItemContent() {
                         onClick={() => { setName(g.name); setShowSuggestions(false); }}
                         className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-secondary"
                       >
-                        <span className="text-2xl">{g.emoji}</span>
+                        <span className="text-xl">{g.emoji}</span>
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-foreground">{g.name}</p>
                           <p className="truncate text-xs text-muted-foreground">{g.ta}</p>
@@ -263,7 +263,7 @@ function AddItemContent() {
                 <Input id="receipt" type="file" accept="image/*" onChange={(e) => setReceipt(e.target.files ? e.target.files[0] : null)} className="flex-1" />
               </div>
 
-              <Button type="submit" className="h-14 w-full rounded-xl bg-emerald-500 text-base font-bold hover:bg-emerald-600" disabled={isUploading || isSaving || !category}>
+              <Button type="submit" className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold hover:bg-emerald-600" disabled={isUploading || isSaving || !category}>
                 {isSaving || isUploading ? 'Saving...' : editId ? 'Update item' : `Add ${category}`}
               </Button>
             </>

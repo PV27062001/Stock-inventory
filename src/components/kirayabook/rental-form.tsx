@@ -168,7 +168,7 @@ export function RentalForm() {
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="h-16 animate-pulse rounded-lg bg-card" />
+              <div key={item} className="h-12 animate-pulse rounded-lg bg-card" />
             ))}
           </div>
         ) : (
@@ -187,7 +187,7 @@ export function RentalForm() {
                 <label className="mb-2 block text-base font-medium text-muted-foreground">Rental From</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-14 w-full justify-start rounded-lg border-border bg-card text-left text-lg text-foreground hover:bg-secondary">
+                    <Button variant="outline" className="h-12 w-full justify-start rounded-lg border-border bg-card text-left text-base text-foreground hover:bg-secondary">
                       <CalendarIcon className="mr-2 h-5 w-5" />
                       {format(rentalFrom, 'MMM d, yyyy')}
                     </Button>
@@ -202,7 +202,7 @@ export function RentalForm() {
                 <label className="mb-2 block text-base font-medium text-muted-foreground">Return Date <span className="text-sm font-normal">(optional)</span></label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="h-14 w-full justify-start rounded-lg border-border bg-card text-left text-lg text-foreground hover:bg-secondary">
+                    <Button variant="outline" className="h-12 w-full justify-start rounded-lg border-border bg-card text-left text-base text-foreground hover:bg-secondary">
                       <CalendarIcon className="mr-2 h-5 w-5" />
                       {rentalTo ? format(rentalTo, 'MMM d, yyyy') : 'Pick a date'}
                     </Button>
@@ -215,7 +215,7 @@ export function RentalForm() {
             </div>
 
             <section className="space-y-3">
-              <h2 className="text-lg font-bold">Items</h2>
+              <h2 className="text-base font-bold">Items</h2>
 
               {items.map((item, index) => (
                 <div key={rowIds[index] ?? index} className="space-y-2 rounded-lg border border-border bg-card p-3">
@@ -277,23 +277,23 @@ export function RentalForm() {
                 placeholder="0"
                 value={advanceAmount || ''}
                 onChange={(event) => setAdvanceAmount(parseFloat(event.target.value) || 0)}
-                className="h-14 rounded-lg border-border bg-card text-lg text-foreground"
+                className="h-12 rounded-lg border-border bg-card text-base text-foreground"
               />
             </div>
 
             <div className="rounded-lg bg-card p-4">
-              <h2 className="mb-4 text-lg font-bold">Billing Summary</h2>
+              <h2 className="mb-4 text-base font-bold">Billing Summary</h2>
               <div className="mb-2 flex justify-between text-base text-muted-foreground">
                 <span>Total Amount</span>
                 <span>Rs.{totalAmount.toFixed(2)}</span>
               </div>
               {refundDue > 0 ? (
-                <div className="flex justify-between text-xl font-bold">
+                <div className="flex justify-between text-lg font-bold">
                   <span>To Return</span>
                   <span className="text-brand-amber">Rs.{refundDue.toFixed(2)}</span>
                 </div>
               ) : (
-                <div className="flex justify-between text-xl font-bold">
+                <div className="flex justify-between text-lg font-bold">
                   <span>Balance Due</span>
                   <span className={balanceDue > 0 ? 'text-destructive' : 'text-primary'}>Rs.{balanceDue.toFixed(2)}</span>
                 </div>
@@ -304,7 +304,7 @@ export function RentalForm() {
       </main>
 
       <div className="fixed bottom-24 left-1/2 z-30 w-full max-w-md -translate-x-1/2 px-4">
-        <Button onClick={handleSaveRental} disabled={isSaving || isLoading} className="h-14 w-full rounded-xl bg-emerald-500 text-base font-bold text-foreground hover:bg-emerald-600 disabled:bg-gray-600">
+        <Button onClick={handleSaveRental} disabled={isSaving || isLoading} className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold text-foreground hover:bg-emerald-600 disabled:bg-gray-600">
           {isSaving ? 'Saving...' : 'Create Rental'}
         </Button>
       </div>

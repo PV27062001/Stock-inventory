@@ -115,7 +115,7 @@ function RentalsContent() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="bg-card sticky top-0 z-10 border-b border-border flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">All Rentals</h1>
+        <h1 className="text-xl font-bold">All Rentals</h1>
         <Link href="/kirayabook/new-rental">
           <Button className="bg-primary hover:bg-teal-700 text-primary-foreground rounded-full">
             <Plus className="w-4 h-4 mr-1" /> Add rental

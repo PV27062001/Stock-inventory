@@ -155,13 +155,13 @@ function CompleteRentalByIdPageContent() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-xl font-bold ml-4">Complete Rental</h1>
+        <h1 className="text-lg font-bold ml-4">Complete Rental</h1>
       </header>
 
       <main className="p-4 pb-60">
         <div className="space-y-6">
           <div className="bg-card rounded-lg p-4">
-            <h2 className="text-lg font-bold mb-2">Rental Period</h2>
+            <h2 className="text-base font-bold mb-2">Rental Period</h2>
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>From: {rental.rentalFrom ? format(rental.rentalFrom, 'PPP') : 'N/A'}</span>
               <span>To: {rental.rentalTo ? format(rental.rentalTo, 'PPP') : 'N/A'}</span>
@@ -211,7 +211,7 @@ function CompleteRentalByIdPageContent() {
           </div>
 
           <div className="bg-card rounded-lg p-4">
-            <h2 className="text-lg font-bold mb-4">Billing Summary</h2>
+            <h2 className="text-base font-bold mb-4">Billing Summary</h2>
             {alreadyClosed ? (
               <>
                 <div className="flex justify-between mb-2 text-muted-foreground"><span>Total Amount</span><span>₹{totalAmount.toFixed(2)}</span></div>
@@ -221,38 +221,38 @@ function CompleteRentalByIdPageContent() {
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-3 mb-3">
                   <label htmlFor="closedBalance" className="flex items-center gap-3">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_6px_18px_rgba(16,185,129,0.35)]">
-                      <ArrowDownCircle className="w-7 h-7" strokeWidth={2.5} />
+                      <ArrowDownCircle className="w-6 h-6" strokeWidth={2.5} />
                     </span>
                     <span className="sr-only">Yet to be collected from {customer?.name || 'customer'}</span>
                   </label>
                   <div className="flex items-center gap-1">
-                    <span className="text-lg font-bold text-emerald-600">₹</span>
+                    <span className="text-base font-bold text-emerald-600">₹</span>
                     <Input
                       id="closedBalance"
                       type="number"
                       min={0}
                       value={closedBalance}
                       onChange={(e) => { setClosedBalance(parseFloat(e.target.value) || 0); setSaved(false); }}
-                      className="w-28 text-right font-extrabold text-xl text-emerald-700 bg-background"
+                      className="w-28 text-right font-extrabold text-lg text-emerald-700 bg-background"
                     />
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-3">
                   <label htmlFor="closedRefund" className="flex items-center gap-3">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-primary-glow">
-                      <ArrowUpCircle className="w-7 h-7" strokeWidth={2.5} />
+                      <ArrowUpCircle className="w-6 h-6" strokeWidth={2.5} />
                     </span>
                     <span className="sr-only">Yet to be returned to {customer?.name || 'customer'}</span>
                   </label>
                   <div className="flex items-center gap-1">
-                    <span className="text-lg font-bold text-primary">₹</span>
+                    <span className="text-base font-bold text-primary">₹</span>
                     <Input
                       id="closedRefund"
                       type="number"
                       min={0}
                       value={closedRefund}
                       onChange={(e) => { setClosedRefund(parseFloat(e.target.value) || 0); setSaved(false); }}
-                      className="w-28 text-right font-extrabold text-xl text-primary bg-background"
+                      className="w-28 text-right font-extrabold text-lg text-primary bg-background"
                     />
                   </div>
                 </div>
@@ -261,7 +261,7 @@ function CompleteRentalByIdPageContent() {
               <>
             <div className={`rounded-lg p-3 mb-4 flex justify-between items-center border ${isRefund ? 'bg-brand-amber/10 border-brand-amber/30' : 'bg-primary/10 border-primary/20'}`}>
               <span className="font-semibold text-foreground">{isRefund ? 'Amount to Return' : 'Amount to Collect'}</span>
-              <span className={`text-2xl font-bold ${isRefund ? 'text-brand-amber' : 'text-primary'}`}>
+              <span className={`text-xl font-bold ${isRefund ? 'text-brand-amber' : 'text-primary'}`}>
                 ₹{(isRefund ? opening.refundDue : opening.balanceDue).toFixed(2)}
               </span>
             </div>
@@ -300,12 +300,12 @@ function CompleteRentalByIdPageContent() {
             )}
             <hr className="border-border mb-4" />
             {settlement.refundDue > 0 ? (
-              <div className="flex justify-between text-xl font-bold">
+              <div className="flex justify-between text-lg font-bold">
                 <span>Still to Return</span>
                 <span className="text-brand-amber">₹{settlement.refundDue.toFixed(2)}</span>
               </div>
             ) : (
-              <div className="flex justify-between text-xl font-bold">
+              <div className="flex justify-between text-lg font-bold">
                 <span>Balance Due</span>
                 <span className={settlement.balanceDue > 0 ? 'text-destructive' : 'text-primary'}>₹{settlement.balanceDue.toFixed(2)}</span>
               </div>
@@ -343,7 +343,7 @@ function CompleteRentalByIdPageContent() {
             <Share2 className="w-5 h-5" />
             Send bill on WhatsApp
           </Button>
-          <Button onClick={handleComplete} disabled={isSaving} className="w-full font-bold h-14 rounded-xl text-base bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed">
+          <Button onClick={handleComplete} disabled={isSaving} className="w-full font-bold h-12 rounded-xl text-base bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed">
             {alreadyClosed
               ? (isSaving ? 'Saving...' : saved ? 'Saved' : 'Save changes')
               : isSaving

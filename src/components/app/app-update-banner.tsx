@@ -56,7 +56,7 @@ export function AppUpdateBanner() {
         <button
           onClick={dismiss}
           aria-label="Dismiss"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
+          className="flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
         >
           <X className="h-4 w-4" />
         </button>

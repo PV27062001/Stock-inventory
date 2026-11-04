@@ -56,23 +56,23 @@ function LoginContent() {
   }
 
   return (
-    <main className="min-h-screen p-6 flex flex-col justify-center items-center bg-background">
+    <main className="min-h-screen p-4 flex flex-col justify-center items-center bg-background">
       <div className="mb-10 text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-brand-blue/20 rounded-3xl flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-brand-blue/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <div className="flex gap-2">
             <ShoppingBasket className="w-5 h-5 text-primary" />
             <BookOpen className="w-5 h-5 text-brand-blue" />
           </div>
         </div>
         <h1 className="text-4xl font-bold text-primary mb-2">Sri Amman</h1>
-        <p className="text-muted-foreground text-lg font-medium mb-1">Samayal Pathirakadai</p>
+        <p className="text-muted-foreground text-base font-medium mb-1">Samayal Pathirakadai</p>
         <p className="text-sm text-muted-foreground/70 max-w-sm mx-auto">
           Manage your inventory and rental records all in one place. Track groceries, medicines, and customer transactions effortlessly.
         </p>
       </div>
 
       <Card className="w-full max-w-sm p-8 border-none shadow-xl rounded-[2.5rem]">
-        <h2 className="text-2xl font-bold mb-2 text-center">Welcome</h2>
+        <h2 className="text-xl font-bold mb-2 text-center">Welcome</h2>
         <p className="text-sm text-muted-foreground text-center mb-6">Sign in to access Inventory and Ledger</p>
 
         {error && (
@@ -84,7 +84,7 @@ function LoginContent() {
         <Button 
           variant="outline" 
           onClick={handleGoogleSignIn}
-          className="w-full h-14 text-lg rounded-2xl border-2"
+          className="w-full h-12 text-base rounded-2xl border-2"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" aria-hidden="true">
             <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>

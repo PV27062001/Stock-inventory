@@ -26,11 +26,11 @@ export function ModuleHeader({
 
   return (
     <div
-      className={`bg-gradient-to-br ${gradient} px-4 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] text-white shadow-elevated`}
+      className={`bg-gradient-to-br ${gradient} px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] text-white shadow-elevated`}
     >
       <div className="mx-auto flex max-w-md items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold leading-tight">{title}</h1>
+          <h1 className="text-xl font-bold leading-tight">{title}</h1>
           {subtitle && <p className="mt-0.5 text-sm text-white/80">{subtitle}</p>}
         </div>
         {right}

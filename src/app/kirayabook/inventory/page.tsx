@@ -105,24 +105,24 @@ export default function InventoryPage() {
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-xl font-bold ml-4">Inventory Management</h1>
+        <h1 className="text-lg font-bold ml-4">Inventory Management</h1>
       </header>
 
       <main className="p-4">
         {/* Add / Edit form */}
         <div className="bg-card p-5 rounded-2xl mb-6 shadow-soft">
-          <h3 className="text-lg font-semibold mb-3">{editId ? 'Edit Item' : 'Add New Item'}</h3>
+          <h3 className="text-base font-semibold mb-3">{editId ? 'Edit Item' : 'Add New Item'}</h3>
           <div className="flex items-start gap-3">
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePickPhoto(e.target.files?.[0] || null)} />
             <button
               onClick={() => fileRef.current?.click()}
-              className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground"
+              className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground"
               aria-label="Add photo"
             >
               {form.imageUrl ? (
                 <img src={form.imageUrl} alt="" className="h-full w-full object-cover" />
               ) : form.name ? (
-                <span className="text-3xl">{itemEmoji(form.name)}</span>
+                <span className="text-[22px]">{itemEmoji(form.name)}</span>
               ) : (
                 <Camera className="h-6 w-6" />
               )}

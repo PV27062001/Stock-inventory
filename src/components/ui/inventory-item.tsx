@@ -44,7 +44,7 @@ export function InventoryItem({ id, name, quantity, unit, category, lowStockThre
     <Card className="p-4 mb-4 flex items-center justify-between shadow-soft hover:shadow-elevated transition-shadow">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">
-          <h4 className="truncate text-xl font-semibold">{name}</h4>
+          <h4 className="truncate text-lg font-semibold">{name}</h4>
           {isLowStock && (
             <Badge variant="destructive" className="bg-brand-orange text-[10px] uppercase font-bold py-0 h-4">
               {t('lowStock')}
@@ -68,7 +68,7 @@ export function InventoryItem({ id, name, quantity, unit, category, lowStockThre
           )}
         </div>
         <div className="mt-2 flex items-baseline gap-1">
-          <span className={cn("text-2xl font-bold", isLowStock ? "text-brand-orange" : "text-primary")}>
+          <span className={cn("text-xl font-bold", isLowStock ? "text-brand-orange" : "text-primary")}>
             {currentQty}
           </span>
           <span className="text-sm font-medium text-muted-foreground uppercase">{unit}</span>
@@ -101,20 +101,20 @@ export function InventoryItem({ id, name, quantity, unit, category, lowStockThre
         <Button
           size="icon"
           variant="secondary"
-          className="w-14 h-14 rounded-2xl shadow-sm bg-primary/10 text-primary hover:bg-primary/20"
+          className="w-12 h-12 rounded-2xl shadow-sm bg-primary/10 text-primary hover:bg-primary/20"
           onClick={() => setQty(currentQty + 1)}
           aria-label="Increase"
         >
-          <Plus className="w-8 h-8" />
+          <Plus className="w-6 h-6" />
         </Button>
         <Button
           size="icon"
           variant="secondary"
-          className="w-14 h-14 rounded-2xl shadow-sm bg-muted text-muted-foreground hover:bg-muted/80"
+          className="w-12 h-12 rounded-2xl shadow-sm bg-muted text-muted-foreground hover:bg-muted/80"
           onClick={() => setQty(currentQty - 1)}
           aria-label="Decrease"
         >
-          <Minus className="w-8 h-8" />
+          <Minus className="w-6 h-6" />
         </Button>
       </div>
     </Card>

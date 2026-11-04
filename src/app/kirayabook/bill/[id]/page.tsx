@@ -110,7 +110,7 @@ export default function RentalBillPage() {
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h1 className="text-lg font-bold">Rental Bill</h1>
+          <h1 className="text-base font-bold">Rental Bill</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="icon" onClick={handlePrint} title="Print / Save as PDF">

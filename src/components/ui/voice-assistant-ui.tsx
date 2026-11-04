@@ -42,14 +42,14 @@ export function VoiceAssistantUI() {
   return (
     <Dialog onOpenChange={(open) => { if(!open) { setResponse(null); setTypedCommand(''); setIsListening(false); } }}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full h-16 rounded-2xl flex items-center justify-center gap-3 text-lg font-medium border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary">
+        <Button variant="outline" className="w-full h-12 rounded-2xl flex items-center justify-center gap-3 text-base font-medium border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary">
           <Mic className="w-6 h-6" />
           {t('voiceAssistant')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-background border-none shadow-2xl rounded-t-[2.5rem] top-auto bottom-0 translate-y-0 duration-300">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-center pt-4">{t('voiceAssistant')}</DialogTitle>
+          <DialogTitle className="text-xl text-center pt-4">{t('voiceAssistant')}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center py-6 gap-6">
           <div 
@@ -59,18 +59,18 @@ export function VoiceAssistantUI() {
             {isListening && (
               <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-25" />
             )}
-            <Mic className={`w-14 h-14 ${isListening ? 'text-white' : 'text-primary'}`} />
+            <Mic className={`w-12 h-12 ${isListening ? 'text-white' : 'text-primary'}`} />
           </div>
           
-          <div className="text-center px-6 w-full">
+          <div className="text-center px-4 w-full">
             {isLoading ? (
               <div className="flex flex-col items-center gap-2 py-4">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 <p className="text-muted-foreground font-medium">Processing your request...</p>
               </div>
             ) : response ? (
-              <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
-                <p className="text-xl font-medium text-foreground leading-relaxed">{response}</p>
+              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
+                <p className="text-lg font-medium text-foreground leading-relaxed">{response}</p>
                 <Button variant="ghost" className="mt-4 text-primary font-bold" onClick={() => setResponse(null)}>
                   Try another command
                 </Button>
@@ -78,7 +78,7 @@ export function VoiceAssistantUI() {
             ) : (
               <div className="space-y-6">
                 <div className="space-y-1">
-                  <p className="text-xl font-bold">{isListening ? 'Listening...' : t('voiceHint')}</p>
+                  <p className="text-lg font-bold">{isListening ? 'Listening...' : t('voiceHint')}</p>
                   <p className="text-muted-foreground text-sm italic">"I bought 2 liters of milk and some eggs"</p>
                 </div>
 
@@ -89,11 +89,11 @@ export function VoiceAssistantUI() {
                       value={typedCommand}
                       onChange={(e) => setTypedCommand(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleCommand(typedCommand)}
-                      className="h-14 rounded-xl border-muted bg-muted/20"
+                      className="h-12 rounded-xl border-muted bg-muted/20"
                     />
                     <Button 
                       size="icon" 
-                      className="h-14 w-14 rounded-xl shrink-0"
+                      className="h-12 w-12 rounded-xl shrink-0"
                       onClick={() => handleCommand(typedCommand)}
                       disabled={!typedCommand}
                     >
@@ -109,7 +109,7 @@ export function VoiceAssistantUI() {
             onClick={() => isListening ? handleCommand("add 2 milk") : startListening()} 
             disabled={isLoading}
             variant={isListening ? "destructive" : "default"}
-            className="w-full h-16 text-xl rounded-2xl font-bold transition-all"
+            className="w-full h-12 text-lg rounded-2xl font-bold transition-all"
           >
             {isListening ? 'Stop & Send' : 'Tap to Speak'}
           </Button>
