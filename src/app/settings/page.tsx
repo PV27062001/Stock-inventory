@@ -94,7 +94,7 @@ function SettingsPage() {
                 {t('addMember')}
               </Button>
             </DialogTrigger>
-            <DialogContent className="rounded-t-[2rem] sm:rounded-2xl top-auto bottom-0 sm:top-1/2 sm:bottom-auto translate-y-0 sm:-translate-y-1/2">
+            <DialogContent className="rounded-t-[2rem] sm:rounded-2xl pb-[max(1.5rem,env(safe-area-inset-bottom))] top-auto bottom-0 sm:top-1/2 sm:bottom-auto translate-y-0 sm:-translate-y-1/2">
               <DialogHeader>
                 <DialogTitle>{t('addMember')}</DialogTitle>
               </DialogHeader>

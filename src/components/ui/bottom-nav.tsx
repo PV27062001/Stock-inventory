@@ -30,7 +30,10 @@ export function BottomNav() {
           const isActive = pathname === item.href;
           return (
             <Link key={item.href} href={item.href} className="flex flex-1 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
-              <item.icon className={`w-6 h-6 ${isActive ? 'text-primary' : ''}`} />
+              {/* Material 3 active indicator, as in GPay / Google apps. */}
+              <span className={`flex h-8 w-16 items-center justify-center rounded-full transition-colors ${isActive ? 'bg-primary/15' : ''}`}>
+                <item.icon className={`w-6 h-6 ${isActive ? 'text-primary' : ''}`} />
+              </span>
               <span className={`text-xs font-medium ${isActive ? 'text-foreground' : ''}`}>
                 {item.label}
               </span>

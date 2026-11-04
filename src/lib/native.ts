@@ -37,6 +37,23 @@ export const showNativeNotification = async (title: string, body?: string) => {
   });
 };
 
+export type SystemBarsStyle = {
+  statusColor: string;
+  statusLightIcons: boolean;
+  navColor?: string;
+  navLightIcons?: boolean;
+};
+
+/**
+ * Colours the Android status / navigation bars (SystemBarsPlugin in the APK). APKs built before
+ * the plugin existed reject the call, which is ignored.
+ */
+export const setNativeSystemBars = async (style: SystemBarsStyle) => {
+  const { registerPlugin } = await import('@capacitor/core');
+  const SystemBars = registerPlugin<{ setStyle: (s: SystemBarsStyle) => Promise<void> }>('SystemBars');
+  await SystemBars.setStyle(style).catch(() => {});
+};
+
 /** The installed APK's versionCode, used to tell the user a newer shell exists. */
 export const getNativeBuild = async (): Promise<number | null> => {
   const { App } = await import('@capacitor/app');
