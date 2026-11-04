@@ -64,6 +64,10 @@ export default function RootLayout({
                   {children}
                   <ConditionalBottomNav />
                 </div>
+                {/* Solid strips behind the status bar and gesture bar, so scrolled content never shows
+                    through them on any page (height is 0 where there are no system-bar insets). */}
+                <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[env(safe-area-inset-top)] bg-background" />
+                <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] h-[env(safe-area-inset-bottom)] bg-card" />
                 <NotificationWatcher />
                 <InstallBanner />
                 <AppUpdateBanner />
