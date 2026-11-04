@@ -26,7 +26,7 @@ export function ModuleHeader({
 
   return (
     <div
-      className={`bg-gradient-to-br ${gradient} px-4 pb-4 pt-6 text-white shadow-elevated`}
+      className={`bg-gradient-to-br ${gradient} px-4 pb-4 pt-[max(1.5rem,env(safe-area-inset-top))] text-white shadow-elevated`}
     >
       <div className="mx-auto flex max-w-md items-center justify-between gap-3">
         <div>

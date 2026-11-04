@@ -54,7 +54,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background min-h-screen pb-24 md:pb-0 overflow-x-hidden">
+      <body className="font-body antialiased bg-background min-h-screen pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">
         <PWARegister />
         <FirebaseClientProvider>
           <AuthProvider>
