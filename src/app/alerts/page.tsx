@@ -28,7 +28,7 @@ export default function AlertsPage() {
   };
 
   return (
-    <main className="p-6">
+    <main className="p-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-primary">Your Alerts</h1>
         <p className="text-muted-foreground font-medium">

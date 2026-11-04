@@ -53,7 +53,7 @@ function SettingsPage() {
   };
 
   return (
-    <main className="p-6 pb-24">
+    <main className="p-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24">
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={goBack}

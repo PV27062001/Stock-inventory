@@ -88,7 +88,7 @@ export default function AddCustomerPage() {
     : PROFESSIONS;
 
   return (
-    <div className="p-4 bg-background min-h-screen text-foreground">
+    <div className="p-4 pt-[max(1rem,env(safe-area-inset-top))] bg-background min-h-screen text-foreground">
       <header className="flex items-center mb-8">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
