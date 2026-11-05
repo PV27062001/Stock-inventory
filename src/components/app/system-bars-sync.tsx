@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { isNativeApp, setNativeSystemBars } from '@/lib/native';
 
 /**
- * Keeps the status bar the same colour as whatever is at the top of the screen (blue / green
- * module headers, white app bars, dark mode), like GPay and Amazon, with icons that stay readable.
- * Re-checks on navigation, scroll and theme change; only reports when the colour actually changes.
+ * Keeps the system bars the same colour as the page (blue / green module headers, white app bars,
+ * dark mode). Like Amazon, the bar stays steady while scrolling: it is set per screen and theme,
+ * so the phone's time and signal icons do not flip colour as content moves underneath.
  */
 
 type RGB = [number, number, number];
@@ -19,10 +19,9 @@ const parseRgb = (value: string): RGB | null => {
   return [+m[1], +m[2], +m[3]];
 };
 
-/** First solid colour painted at a point: background colour, else the gradient's first stop. */
+/** Top-most solid colour painted at a point: background colour, else the gradient's first stop. */
 const colourAt = (x: number, y: number): RGB | null => {
-  let el = document.elementFromPoint(x, y) as HTMLElement | null;
-  while (el) {
+  for (const el of document.elementsFromPoint(x, y)) {
     const style = getComputedStyle(el);
     const bg = parseRgb(style.backgroundColor);
     if (bg) return bg;
@@ -30,15 +29,11 @@ const colourAt = (x: number, y: number): RGB | null => {
       const stop = parseRgb(style.backgroundImage);
       if (stop) return stop;
     }
-    el = el.parentElement;
   }
   return parseRgb(getComputedStyle(document.body).backgroundColor);
 };
 
 const toHex = ([r, g, b]: RGB) => '#' + [r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('');
-
-// Relative luminance; dark backgrounds get light (white) icons.
-const isDark = ([r, g, b]: RGB) => 0.2126 * r + 0.7152 * g + 0.0722 * b < 150;
 
 const setThemeColor = (hex: string) => {
   let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
@@ -57,42 +52,42 @@ export function SystemBarsSync() {
     const native = isNativeApp();
     let last = '';
     let frame = 0;
+    let forced = true;
 
     const sync = () => {
       frame = 0;
+      // Scrolled content must not recolour the bar; only a new screen or theme may.
+      if (window.scrollY > 8 && !forced) return;
+      forced = false;
       // Sample just below the status-bar strip (0px tall when the WebView already sits below the bar).
       const insetTop = document.getElementById('status-bar-strip')?.offsetHeight ?? 0;
       const top = colourAt(window.innerWidth / 2, insetTop + 2);
-      const bottomEl = colourAt(window.innerWidth / 2, window.innerHeight - 2);
+      const bottom = colourAt(window.innerWidth / 2, window.innerHeight - 2);
       if (!top) return;
       const statusColor = toHex(top);
-      const navColor = bottomEl ? toHex(bottomEl) : statusColor;
+      const navColor = toHex(bottom ?? top);
       const key = statusColor + navColor;
       if (key === last) return;
       last = key;
 
       document.documentElement.style.setProperty('--status-bar-color', statusColor);
       setThemeColor(statusColor);
-      if (native) {
-        setNativeSystemBars({
-          statusColor,
-          statusLightIcons: isDark(top),
-          navColor,
-          navLightIcons: bottomEl ? isDark(bottomEl) : isDark(top),
-        });
-      }
+      if (native) setNativeSystemBars({ statusColor, navColor });
     };
 
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(sync);
     };
+    const forceSync = () => {
+      forced = true;
+      schedule();
+    };
 
     // Run after the new page has painted, and again once late content (loaders → data) settles.
     schedule();
-    const settle = window.setTimeout(schedule, 400);
-    window.addEventListener('scroll', schedule, { passive: true });
+    const settle = window.setTimeout(forceSync, 400);
     window.addEventListener('resize', schedule);
-    const themeWatch = new MutationObserver(schedule);
+    const themeWatch = new MutationObserver(forceSync);
     themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     const domWatch = new MutationObserver(schedule);
     domWatch.observe(document.body, { childList: true, subtree: true });
@@ -100,7 +95,6 @@ export function SystemBarsSync() {
     return () => {
       if (frame) cancelAnimationFrame(frame);
       window.clearTimeout(settle);
-      window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       themeWatch.disconnect();
       domWatch.disconnect();
