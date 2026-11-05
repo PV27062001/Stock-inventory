@@ -53,8 +53,8 @@ function SettingsPage() {
   };
 
   return (
-    <main className="p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24">
-      <div className="flex items-center gap-3 mb-8">
+    <>
+      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2">
         <button
           onClick={goBack}
           aria-label="Go back"
@@ -62,8 +62,10 @@ function SettingsPage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-[22px] font-bold">{t('settings')}</h1>
-      </div>
+        <h1 className="text-lg font-bold">{t('settings')}</h1>
+      </header>
+
+      <main className="p-4">
 
       {/* Family Sharing Section */}
       <section className="mb-8">
@@ -244,7 +246,8 @@ function SettingsPage() {
         <p className="text-base font-bold">Sri Amman v1.0.0</p>
         <p>Made with love for parents</p>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

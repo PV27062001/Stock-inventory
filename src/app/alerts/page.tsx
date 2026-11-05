@@ -28,13 +28,15 @@ export default function AlertsPage() {
   };
 
   return (
-    <main className="p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-      <header className="mb-8">
-        <h1 className="text-[22px] font-bold tracking-tight text-primary">Your Alerts</h1>
-        <p className="text-muted-foreground font-medium">
-          Here's what needs your attention today.
-        </p>
+    <>
+      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold">Your Alerts</h1>
+          <p className="truncate text-sm text-muted-foreground">Here's what needs your attention today.</p>
+        </div>
       </header>
+
+      <main className="p-4">
 
       <div className="space-y-4">
         {alerts.length === 0 ? (
@@ -68,6 +70,7 @@ export default function AlertsPage() {
           ))
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

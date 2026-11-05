@@ -87,9 +87,9 @@ function AddItemPage() {
   };
 
   return (
-    <main className="p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-[22px] font-bold">{t('addItem')}</h1>
+    <>
+      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2 justify-between">
+        <h1 className="text-lg font-bold">{t('addItem')}</h1>
         <div className="relative">
           <Input 
             type="file" 
@@ -107,8 +107,9 @@ function AddItemPage() {
             {t('scanReceipt')}
           </Label>
         </div>
-      </div>
+      </header>
 
+      <main className="p-4">
       <Card className="p-4 space-y-6 border-none shadow-sm">
         <div className="space-y-4">
           <Label htmlFor="name" className="text-base font-semibold">{t('itemName')}</Label>
@@ -214,7 +215,8 @@ function AddItemPage() {
           </Button>
         </div>
       </Card>
-    </main>
+      </main>
+    </>
   );
 }
 

@@ -88,15 +88,15 @@ export default function AddCustomerPage() {
     : PROFESSIONS;
 
   return (
-    <div className="p-4 pt-[max(1rem,env(safe-area-inset-top))] bg-background min-h-screen text-foreground">
-      <header className="flex items-center mb-8">
+    <div className="bg-background min-h-screen text-foreground">
+      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-lg font-bold ml-4">Add New Customer</h1>
+        <h1 className="text-lg font-bold">Add New Customer</h1>
       </header>
 
-      <div className="space-y-6">
+      <div className="space-y-6 p-4">
         <div className="flex justify-center mb-8">
             <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
             <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border shadow-soft transition-shadow hover:shadow-elevated">

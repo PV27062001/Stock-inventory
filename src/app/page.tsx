@@ -44,7 +44,7 @@ function HomePage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="safe-top-band border-b border-border bg-card px-4 py-4">
+      <header className="sticky top-0 z-20 border-b border-border bg-card px-4 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">{t('welcome') || 'Welcome'}</p>

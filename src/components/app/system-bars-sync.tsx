@@ -62,15 +62,17 @@ export function SystemBarsSync() {
       // Sample just below the status-bar strip (0px tall when the WebView already sits below the bar).
       const insetTop = document.getElementById('status-bar-strip')?.offsetHeight ?? 0;
       const top = colourAt(window.innerWidth / 2, insetTop + 2);
-      const bottom = colourAt(window.innerWidth / 2, window.innerHeight - 2);
       if (!top) return;
+      // The bottom bar joins the app's bottom nav where there is one, else the page itself.
+      const base = document.querySelector('nav.fixed') ?? document.body;
       const statusColor = toHex(top);
-      const navColor = toHex(bottom ?? top);
+      const navColor = toHex(parseRgb(getComputedStyle(base).backgroundColor) ?? top);
       const key = statusColor + navColor;
       if (key === last) return;
       last = key;
 
       document.documentElement.style.setProperty('--status-bar-color', statusColor);
+      document.documentElement.style.setProperty('--nav-bar-color', navColor);
       setThemeColor(statusColor);
       if (native) setNativeSystemBars({ statusColor, navColor });
     };

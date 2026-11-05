@@ -87,8 +87,7 @@
 
 /* Full-width top bars sit below the status bar / notch: an extra card-coloured band of the
    inset height (additive, so it works with each header's own padding). */
-header.sticky,
-.safe-top-band {
+header.sticky {
   border-top: env(safe-area-inset-top) solid hsl(var(--card));
 }
 

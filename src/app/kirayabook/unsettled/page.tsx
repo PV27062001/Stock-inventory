@@ -92,7 +92,7 @@ export default function UnsettledPage() {
       <AppHeader title="Unsettled Accounts" subtitle="Ledger" back backHref="/kirayabook" switchTo="inventory" />
       
       {/* Horizontal filter chips */}
-      <div className="sticky top-[60px] z-10 bg-background/80 backdrop-blur-md border-b border-border py-3">
+      <div className="sticky top-[calc(73px+env(safe-area-inset-top))] z-10 bg-background/80 backdrop-blur-md border-b border-border py-3">
         <div className="flex overflow-x-auto gap-2 px-4 no-scrollbar">
           <button
             onClick={() => setActiveFilter('All')}

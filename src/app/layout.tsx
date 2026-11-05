@@ -55,20 +55,21 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background min-h-screen pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">
+      <body className="font-body antialiased bg-background min-h-screen overflow-x-hidden">
         <PWARegister />
         <FirebaseClientProvider>
           <AuthProvider>
             <LanguageProvider>
               <AlertProvider>
-                <div className="max-w-md mx-auto min-h-screen bg-background shadow-xl md:border-x overflow-x-hidden">
+                {/* overflow-x-clip, not hidden: hidden makes this a scroll container and silently stops every sticky app bar. */}
+                <div className="max-w-md mx-auto min-h-screen bg-background shadow-xl md:border-x overflow-x-clip pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
                   {children}
                   <ConditionalBottomNav />
                 </div>
                 {/* Solid strips behind the status bar and gesture bar, so scrolled content never shows
                     through them on any page (height is 0 where there are no system-bar insets). */}
                 <div id="status-bar-strip" aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[env(safe-area-inset-top)] bg-[var(--status-bar-color,hsl(var(--background)))] transition-colors duration-200" />
-                <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] h-[env(safe-area-inset-bottom)] bg-card" />
+                <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] h-[env(safe-area-inset-bottom)] bg-[var(--nav-bar-color,hsl(var(--background)))] transition-colors duration-200" />
                 <SystemBarsSync />
                 <NotificationWatcher />
                 <InstallBanner />
