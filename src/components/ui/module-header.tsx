@@ -21,8 +21,8 @@ export function ModuleHeader({
   const pathname = usePathname();
   const onLedger = pathname?.startsWith('/kirayabook');
 
-  const background = onLedger ? 'bg-[#1E8E3E]' : 'bg-[#1A73E8]';
-  const activeText = onLedger ? 'text-[#1E8E3E]' : 'text-[#1A73E8]';
+  const background = 'bg-[hsl(var(--app-bar))]';
+  const activeText = 'text-[hsl(var(--app-bar))]';
 
   return (
     <>

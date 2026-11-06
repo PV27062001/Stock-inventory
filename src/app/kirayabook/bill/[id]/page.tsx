@@ -119,7 +119,7 @@ export default function RentalBillPage() {
           <Button
             onClick={handleExportJpeg}
             disabled={isExporting}
-            className="gap-2 border-[#25D366]/40 bg-[#25D366] text-white hover:bg-[#25D366]/90"
+            className="gap-2"
           >
             {isExporting ? <Download className="h-4 w-4 animate-bounce" /> : <Share2 className="h-4 w-4" />}
             {isExporting ? 'Preparing…' : 'WhatsApp / JPEG'}

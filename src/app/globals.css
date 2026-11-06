@@ -30,6 +30,11 @@
     --chart-3: 41 100% 49%;         /* amber */
     --chart-4: 28 95% 53%;          /* orange */
     --chart-5: 280 68% 60%;         /* purple */
+    /* Top app bar + status bar. Must stay dark enough for white status icons, in both themes. */
+    --app-bar: 214 82% 51%;         /* blue = Personal */
+  }
+  :root[data-module='ledger'] {
+    --app-bar: 137 65% 34%;         /* green = Ledger */
   }
   .dark {
     --background: 222 18% 11%;
@@ -85,9 +90,25 @@
   }
 }
 
-/* Full-width top bars sit below the status bar / notch: an extra card-coloured band of the
-   inset height (additive, so it works with each header's own padding). */
+/* Every screen's top app bar is the brand colour, joined to the status bar, so the phone's own
+   icons always sit on a dark bar. Re-pointing the theme tokens here recolours whatever each page
+   put inside its bar. The border is an extra band of the inset height below the status bar. */
 header.sticky {
+  --card: var(--app-bar);
+  --card-foreground: 0 0% 100%;
+  --background: var(--app-bar);
+  --foreground: 0 0% 100%;
+  --muted-foreground: 0 0% 92%;
+  --primary: 0 0% 100%;
+  --primary-foreground: var(--app-bar);
+  --secondary: 0 0% 100% / 0.15;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 0 0% 100% / 0.15;
+  --accent-foreground: 0 0% 100%;
+  --border: var(--app-bar);
+  --input: 0 0% 100% / 0.5;
+  --destructive: 0 0% 100%;
+  color: hsl(var(--foreground));
   border-top: env(safe-area-inset-top) solid hsl(var(--card));
 }
 
