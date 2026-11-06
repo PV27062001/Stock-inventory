@@ -2,15 +2,16 @@
 
 import { logger } from '@/lib/logger';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { addCustomer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
+import { PhotoPicker } from '@/components/kirayabook/photo-picker';
 import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function AddCustomerPage() {
@@ -33,10 +34,6 @@ export default function AddCustomerPage() {
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const aadhaarInputRef = useRef<HTMLInputElement>(null);
-  const panInputRef = useRef<HTMLInputElement>(null);
-  const licenceInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     if (!name) {
@@ -98,10 +95,13 @@ export default function AddCustomerPage() {
 
       <div className="space-y-6 p-4">
         <div className="flex justify-center mb-8">
-            <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
-            <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border shadow-soft transition-shadow hover:shadow-elevated">
-                {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Upload Photo</span></>}
+            <PhotoPicker title="Customer photo" onPick={setPhotoFile}>
+              {(open) => (
+            <button onClick={open} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border shadow-soft transition-shadow hover:shadow-elevated">
+                {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Add Photo</span></>}
             </button>
+            )}
+            </PhotoPicker>
         </div>
 
         <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
@@ -143,29 +143,32 @@ export default function AddCustomerPage() {
         
         <div className='flex items-center gap-2'>
             <Input placeholder="Aadhaar Number" value={aadhaar} onChange={(e) => setAadhaar(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={aadhaarInputRef} onChange={e => setAadhaarFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <PhotoPicker title="Aadhaar photo" onPick={setAadhaarFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Aadhaar photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {aadhaarFile && <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg mt-2" />}
 
         <div className='flex items-center gap-2'>
             <Input placeholder="PAN Number" value={pan} onChange={(e) => setPan(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={panInputRef} onChange={e => setPanFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <PhotoPicker title="PAN photo" onPick={setPanFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add PAN photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {panFile && <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg mt-2" />}
 
         <div className='flex items-center gap-2'>
             <Input placeholder="Driving Licence / ID Number" value={licence} onChange={(e) => setLicence(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={licenceInputRef} onChange={e => setLicenceFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <PhotoPicker title="Licence / ID photo" onPick={setLicenceFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Licence / ID photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {licenceFile && <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg mt-2" />}
       </div>
 
-      {error && <p className="text-destructive text-sm mt-4 text-center">{error}</p>}
+      {error && <p className="text-destructive text-sm px-4 text-center">{error}</p>}
 
-      <div className="mt-10">
+      <div className="p-4">
         <Button onClick={handleSave} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-12 rounded-xl text-base shadow-primary-glow transition-shadow">
           {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving…</> : 'Save Customer'}
         </Button>

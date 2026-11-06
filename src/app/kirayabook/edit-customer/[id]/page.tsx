@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCustomerById, updateCustomer, Customer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service'; // Assuming this exists and works
-import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMemo } from 'react'; // Import useMemo
@@ -15,6 +15,7 @@ import { BrandLoader } from '@/components/app/brand-loader';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
+import { PhotoPicker } from '@/components/kirayabook/photo-picker';
 import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function EditCustomerPage() {
@@ -33,10 +34,6 @@ export default function EditCustomerPage() {
   const [panFile, setPanFile] = useState<File | null>(null);
   const [licenceFile, setLicenceFile] = useState<File | null>(null);
 
-  const photoInputRef = React.useRef<HTMLInputElement>(null);
-  const aadhaarInputRef = React.useRef<HTMLInputElement>(null);
-  const panInputRef = React.useRef<HTMLInputElement>(null);
-  const licenceInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!customerId) {
@@ -130,10 +127,13 @@ export default function EditCustomerPage() {
         <main className="p-4 pb-44">
             <div className="space-y-4">
                 <div className="flex justify-center mb-8">
-                    <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
-                    <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
-                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
+                    <PhotoPicker title="Customer photo" onPick={setPhotoFile}>
+                      {(open) => (
+                    <button onClick={open} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
+                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Add Photo</span></>)}
                     </button>
+                    )}
+                    </PhotoPicker>
                 </div>
 
                  <div>
@@ -194,8 +194,9 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">Aadhaar</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.aadhaar || ''} onChange={(e) => handleInputChange('aadhaar', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={aadhaarInputRef} onChange={e => setAadhaarFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="Aadhaar photo" onPick={setAadhaarFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Aadhaar photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {aadhaarFile ? <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg" /> 
@@ -207,8 +208,9 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">PAN</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.pan || ''} onChange={(e) => handleInputChange('pan', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={panInputRef} onChange={e => setPanFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="PAN photo" onPick={setPanFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add PAN photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {panFile ? <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg" /> 
@@ -220,8 +222,9 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">Driving Licence</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.drivingLicence || ''} onChange={(e) => handleInputChange('drivingLicence', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={licenceInputRef} onChange={e => setLicenceFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="Licence / ID photo" onPick={setLicenceFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Licence / ID photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {licenceFile ? <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg" /> 

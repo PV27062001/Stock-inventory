@@ -18,8 +18,9 @@ const readAsDataUrl = (file: File) =>
 export const uploadFile = async (file: File): Promise<string> => {
   const original = await readAsDataUrl(file);
 
-  // Only images can be downscaled; anything else is stored as-is.
-  if (!file.type.startsWith('image/')) return original;
+  // Only images can be downscaled; anything else is stored as-is. Camera files can arrive with no
+  // type, so those still go through the resize.
+  if (file.type && !file.type.startsWith('image/')) return original;
 
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
