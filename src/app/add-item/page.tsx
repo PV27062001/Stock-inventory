@@ -9,13 +9,14 @@ import { useFileUpload } from '@/firebase/storage/use-file-upload';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { AppHeader } from '@/components/app/app-header';
 import { LoadingOverlay } from '@/components/app/loading-overlay';
+import { BarcodeScanner } from '@/components/app/barcode-scanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Timestamp } from 'firebase/firestore';
-import { Upload, Pill, Utensils, Clock } from 'lucide-react';
+import { Upload, Pill, Utensils, Clock, ScanBarcode, Loader2 } from 'lucide-react';
 import { Unit } from '@/types';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { searchGroceries } from '@/lib/grocery-list';
@@ -25,7 +26,9 @@ const units: Unit[] = ['g', 'kg', 'l', 'ml', 'units'];
 function AddItemContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams?.get('id') ?? null;
+  // Set when a scan matches an item already in stock, which opens it here for editing.
+  const [scannedItemId, setScannedItemId] = useState<string | null>(null);
+  const editId = scannedItemId ?? searchParams?.get('id') ?? null;
   const { user } = useAuthUser();
   const { addItem, updateItem, items } = useInventory();
   const { upload, loading: isUploading } = useFileUpload();
@@ -43,6 +46,10 @@ function AddItemContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [barcode, setBarcode] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [scanNote, setScanNote] = useState('');
 
   useEffect(() => {
     const numDosage = Number(dosage || 1);
@@ -63,6 +70,7 @@ function AddItemContent() {
     if (!it) return;
     setCategory(it.category === 'Medicine' ? 'Medicine' : 'Grocery');
     setName(it.name || '');
+    setBarcode(it.barcode || '');
     setQuantity(it.quantity ?? 1);
     if (it.unit) setUnit(it.unit);
     if (it.lowStockThreshold != null) setLowStockThreshold(it.lowStockThreshold);
@@ -80,6 +88,37 @@ function AddItemContent() {
     const newReminderTimes = [...reminderTimes];
     newReminderTimes[index] = value;
     setReminderTimes(newReminderTimes);
+  };
+
+  const handleBarcode = async (code: string) => {
+    setIsScanning(false);
+    // Already stocked: open that item so the quantity is topped up, not duplicated.
+    const existing = items.find((item) => item.barcode === code);
+    if (existing) {
+      setScanNote('Already in your stock. Update the quantity below.');
+      setScannedItemId(existing.id);
+      return;
+    }
+
+    setBarcode(code);
+    setScanNote('');
+    setIsLookingUp(true);
+    try {
+      const res = await fetch(`/api/product-lookup?code=${code}`);
+      const product = await res.json();
+      if (product.found) {
+        setName(product.name);
+        setScanNote('Product found. Check the name, then add it.');
+      } else if (product.unavailable) {
+        setScanNote('Could not look this up right now. Type the name and this barcode will be remembered.');
+      } else {
+        setScanNote('Not in the product database. Type the name once and this barcode will be remembered.');
+      }
+    } catch {
+      setScanNote('Could not look this up right now. Type the name and this barcode will be remembered.');
+    } finally {
+      setIsLookingUp(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,6 +144,7 @@ function AddItemContent() {
 
       if (category === 'Grocery') {
         newItem.unit = unit;
+        if (barcode) newItem.barcode = barcode;
       } else if (category === 'Medicine') {
         newItem.dosage = Number(dosage) || null;
         newItem.dailyAlert = dailyAlert;
@@ -133,6 +173,7 @@ function AddItemContent() {
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" back backHref="/inventory#inventory" switchTo="rental" />
       <LoadingOverlay show={isSaving || isUploading} message="Saving inventory..." />
+      {isScanning && <BarcodeScanner onDetected={handleBarcode} onClose={() => setIsScanning(false)} />}
 
       <main className="px-4 py-5 pb-24">
         {error && <p className="mb-4 rounded-lg border border-destructive/40 bg-destructive/15 px-4 py-3 text-base text-destructive">{error}</p>}
@@ -141,11 +182,11 @@ function AddItemContent() {
           <div className="space-y-2">
             <Label className="text-base text-muted-foreground">What are you adding?</Label>
             <div className="grid grid-cols-2 gap-4">
-              <Button type="button" variant={category === 'Grocery' ? 'default' : 'outline'} className="h-12 flex-col gap-2 text-base" onClick={() => setCategory('Grocery')}>
+              <Button type="button" variant={category === 'Grocery' ? 'default' : 'outline'} className="h-12 gap-2 text-base" onClick={() => setCategory('Grocery')}>
                 <Utensils/>
                 Grocery
               </Button>
-               <Button type="button" variant={category === 'Medicine' ? 'default' : 'outline'} className="h-12 flex-col gap-2 text-base" onClick={() => setCategory('Medicine')}>
+               <Button type="button" variant={category === 'Medicine' ? 'default' : 'outline'} className="h-12 gap-2 text-base" onClick={() => setCategory('Medicine')}>
                 <Pill/>
                 Medicine
               </Button>
@@ -154,6 +195,14 @@ function AddItemContent() {
 
           {category && (
             <>
+             {category === 'Grocery' && !editId && (
+                <Button type="button" variant="outline" disabled={isLookingUp} onClick={() => setIsScanning(true)} className="h-12 w-full gap-2 rounded-xl text-base">
+                  {isLookingUp ? <Loader2 className="h-5 w-5 animate-spin" /> : <ScanBarcode className="h-5 w-5" />}
+                  {isLookingUp ? 'Looking up product…' : 'Scan barcode'}
+                </Button>
+              )}
+              {scanNote && <p role="status" className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-foreground">{scanNote}</p>}
+
              {/* Common Fields */}
               <div className="space-y-2 relative">
                 <Label htmlFor="name">{category} Name</Label>
@@ -227,6 +276,7 @@ function AddItemContent() {
                <div className="space-y-2">
                 <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
                 <Input id="expiryDate" type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+                {barcode && <p className="text-xs text-muted-foreground">Barcodes don't include the expiry date. Copy it from the pack.</p>}
               </div>
 
                <div className="space-y-2">
