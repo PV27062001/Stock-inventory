@@ -1,22 +1,59 @@
 import { NextResponse } from 'next/server';
 
-// Open Food Facts: free product database. Coverage of Indian packs is partial, so "not found" is
-// a normal answer here, not an error. Only the barcode number is sent, never any user data.
-const PRODUCT_API = 'https://world.openfoodfacts.org/api/v2/product';
+// No free database covers Indian packs well, so "not found" is a normal answer here, not an error:
+// the app then asks for the name once and remembers the barcode. Sources are tried in order and
+// only the barcode number is ever sent to them.
+const OPEN_FOOD_FACTS = 'https://world.openfoodfacts.org/api/v2/product';
+const UPC_ITEM_DB = 'https://api.upcitemdb.com/prod/trial/lookup'; // free tier: 100 lookups a day, no key
 
-type Product = { product_name?: string; brands?: string; quantity?: string };
+const TIMEOUT_MS = 6000;
+
+type Product = {
+  product_name?: string;
+  product_name_en?: string;
+  abbreviated_product_name?: string;
+  generic_name?: string;
+  generic_name_en?: string;
+  brands?: string;
+  quantity?: string;
+};
 
 // "Britannia" + "Jimjam 460g" -> "Britannia Jimjam 460g", without repeating the brand or the size.
-function displayName({ product_name, brands, quantity }: Product): string {
-  const product = product_name?.trim() ?? '';
+function displayName(p: Product): string {
+  const product = [p.product_name, p.product_name_en, p.abbreviated_product_name, p.generic_name, p.generic_name_en]
+    .map((name) => name?.trim())
+    .find(Boolean) ?? '';
   if (!product) return '';
-  const brand = brands?.split(',')[0]?.trim() ?? '';
-  const size = quantity?.trim() ?? '';
+  const brand = p.brands?.split(',')[0]?.trim() ?? '';
+  const size = p.quantity?.trim() ?? '';
   const flat = (text: string) => text.toLowerCase().replace(/\s/g, '');
   const parts = [product];
   if (brand && !flat(product).includes(flat(brand))) parts.unshift(brand);
   if (size && !flat(product).includes(flat(size))) parts.push(size);
   return parts.join(' ');
+}
+
+async function fromOpenFoodFacts(code: string): Promise<string> {
+  const fields = 'product_name,product_name_en,abbreviated_product_name,generic_name,generic_name_en,brands,quantity';
+  const res = await fetch(`${OPEN_FOOD_FACTS}/${code}.json?fields=${fields}`, {
+    headers: { 'User-Agent': 'SriAmmanApp/1.0' },
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok && res.status !== 404) throw new Error(`Open Food Facts: ${res.status}`);
+  const data = await res.json();
+  return data.status === 1 && data.product ? displayName(data.product) : '';
+}
+
+async function fromUpcItemDb(code: string): Promise<string> {
+  const res = await fetch(`${UPC_ITEM_DB}?upc=${code}`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok && res.status !== 404) throw new Error(`UPCitemdb: ${res.status}`);
+  const data = await res.json();
+  return data.items?.[0]?.title?.trim() ?? '';
 }
 
 export async function GET(request: Request) {
@@ -25,17 +62,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid barcode' }, { status: 400 });
   }
 
-  try {
-    const res = await fetch(`${PRODUCT_API}/${code}.json?fields=product_name,brands,quantity`, {
-      headers: { 'User-Agent': 'SriAmmanApp/1.0' },
-      signal: AbortSignal.timeout(6000),
-      next: { revalidate: 86400 },
-    });
-    if (!res.ok && res.status !== 404) throw new Error(`Lookup failed: ${res.status}`);
-    const data = await res.json();
-    const name = data.status === 1 && data.product ? displayName(data.product) : '';
-    return NextResponse.json({ found: !!name, name });
-  } catch {
+  let failures = 0;
+  const sources = [fromOpenFoodFacts, fromUpcItemDb];
+  for (const source of sources) {
+    try {
+      const name = await source(code);
+      if (name) return NextResponse.json({ found: true, name });
+    } catch {
+      failures += 1;
+    }
+  }
+  if (failures === sources.length) {
     return NextResponse.json({ found: false, unavailable: true }, { status: 502 });
   }
+  return NextResponse.json({ found: false, name: '' });
 }

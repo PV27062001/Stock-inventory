@@ -53,6 +53,20 @@ export const setNativeSystemBars = async (style: SystemBarsStyle) => {
   await SystemBars.setStyle(style).catch(() => {});
 };
 
+export type NativeScanResult = { code?: string; cancelled?: boolean };
+
+/**
+ * Scans with Google's native scanner (NativeBarcodePlugin in the APK). Returns null when it can't
+ * run, such as an older APK, no Play services, or the scanner module failing to download, so the
+ * caller can use the web scanner instead.
+ */
+export const scanNativeBarcode = async (): Promise<NativeScanResult | null> => {
+  if (!isNativeApp()) return null;
+  const { registerPlugin } = await import('@capacitor/core');
+  const NativeBarcode = registerPlugin<{ scan: () => Promise<NativeScanResult> }>('NativeBarcode');
+  return NativeBarcode.scan().catch(() => null);
+};
+
 /** The installed APK's versionCode, used to tell the user a newer shell exists. */
 export const getNativeBuild = async (): Promise<number | null> => {
   const { App } = await import('@capacitor/app');

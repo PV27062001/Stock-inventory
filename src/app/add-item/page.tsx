@@ -20,6 +20,7 @@ import { Upload, Pill, Utensils, Clock, ScanBarcode, Loader2 } from 'lucide-reac
 import { Unit } from '@/types';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { searchGroceries } from '@/lib/grocery-list';
+import { scanNativeBarcode } from '@/lib/native';
 
 const units: Unit[] = ['g', 'kg', 'l', 'ml', 'units'];
 
@@ -49,6 +50,9 @@ function AddItemContent() {
   const [barcode, setBarcode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isOpeningScanner, setIsOpeningScanner] = useState(false);
+  const [showTypedCode, setShowTypedCode] = useState(false);
+  const [typedCode, setTypedCode] = useState('');
   const [scanNote, setScanNote] = useState('');
 
   useEffect(() => {
@@ -90,8 +94,18 @@ function AddItemContent() {
     setReminderTimes(newReminderTimes);
   };
 
+  const startScan = async () => {
+    setIsOpeningScanner(true);
+    const result = await scanNativeBarcode();
+    setIsOpeningScanner(false);
+    if (result?.code) handleBarcode(result.code);
+    else if (!result) setIsScanning(true); // native scanner unavailable, use the web one
+  };
+
   const handleBarcode = async (code: string) => {
     setIsScanning(false);
+    setShowTypedCode(false);
+    setTypedCode('');
     // Already stocked: open that item so the quantity is topped up, not duplicated.
     const existing = items.find((item) => item.barcode === code);
     if (existing) {
@@ -196,10 +210,26 @@ function AddItemContent() {
           {category && (
             <>
              {category === 'Grocery' && !editId && (
-                <Button type="button" variant="outline" disabled={isLookingUp} onClick={() => setIsScanning(true)} className="h-12 w-full gap-2 rounded-xl text-base">
-                  {isLookingUp ? <Loader2 className="h-5 w-5 animate-spin" /> : <ScanBarcode className="h-5 w-5" />}
-                  {isLookingUp ? 'Looking up product…' : 'Scan barcode'}
-                </Button>
+                <div className="space-y-2">
+                  <Button type="button" variant="outline" disabled={isLookingUp || isOpeningScanner} onClick={startScan} className="h-12 w-full gap-2 rounded-xl text-base">
+                    {isLookingUp || isOpeningScanner ? <Loader2 className="h-5 w-5 animate-spin" /> : <ScanBarcode className="h-5 w-5" />}
+                    {isLookingUp ? 'Looking up product…' : isOpeningScanner ? 'Opening scanner…' : 'Scan barcode'}
+                  </Button>
+                  {showTypedCode ? (
+                    <div className="flex gap-2">
+                      <Input
+                        value={typedCode}
+                        onChange={(e) => setTypedCode(e.target.value.replace(/\D/g, ''))}
+                        inputMode="numeric"
+                        placeholder="Number under the barcode"
+                        aria-label="Barcode number"
+                      />
+                      <Button type="button" disabled={!/^\d{8,14}$/.test(typedCode) || isLookingUp} onClick={() => handleBarcode(typedCode)} className="shrink-0">Look up</Button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setShowTypedCode(true)} className="min-h-11 w-full text-sm font-semibold text-primary">Type barcode number</button>
+                  )}
+                </div>
               )}
               {scanNote && <p role="status" className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-foreground">{scanNote}</p>}
 
