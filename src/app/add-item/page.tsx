@@ -38,8 +38,6 @@ function AddItemContent() {
   // Read through refs because a scan finishes long after the render that started it.
   const itemsRef = useRef(items);
   itemsRef.current = items;
-  const scannedItemIdRef = useRef(scannedItemId);
-  scannedItemIdRef.current = scannedItemId;
   const prefilledIdRef = useRef<string | null>(null);
   const topUpRef = useRef(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -151,12 +149,8 @@ function AddItemContent() {
     const existing = itemsRef.current.find((item) => item.barcode === code);
     if (existing) {
       setScanNote('Already in your stock, so 1 was added. Change the quantity if needed.');
-      if (existing.id === scannedItemIdRef.current) {
-        setQuantity((q) => q + 1);
-      } else {
-        topUpRef.current = true;
-        setScannedItemId(existing.id);
-      }
+      topUpRef.current = true;
+      setScannedItemId(existing.id);
       return;
     }
 
