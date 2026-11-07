@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useInventory } from '@/firebase/firestore/use-inventory';
+import { getSharedBarcode, saveSharedBarcode } from '@/firebase/firestore/barcode-list';
 import { useFileUpload } from '@/firebase/storage/use-file-upload';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { AppHeader } from '@/components/app/app-header';
@@ -20,6 +21,7 @@ import { Pill, Utensils, Clock, ScanBarcode, Loader2, ChevronDown } from 'lucide
 import { Unit } from '@/types';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { searchGroceries } from '@/lib/grocery-list';
+import { MedicineEntry, searchMedicines } from '@/lib/medicine-search';
 import { BUILT_IN_SCANNER_BUILD, getNativeBuild, isNativeApp, scanNativeBarcode } from '@/lib/native';
 import { parseScannedCode } from '@/lib/scanned-code';
 
@@ -55,6 +57,7 @@ function AddItemContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [medicineSuggestions, setMedicineSuggestions] = useState<MedicineEntry[]>([]);
   const [barcode, setBarcode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -77,6 +80,20 @@ function AddItemContent() {
         setReminderTimes([]);
     }
   }, [dailyAlert, dosage]);
+
+  useEffect(() => {
+    if (category !== 'Medicine' || !showSuggestions) {
+      setMedicineSuggestions([]);
+      return;
+    }
+    let stale = false;
+    searchMedicines(name).then((results) => {
+      if (!stale) setMedicineSuggestions(results);
+    });
+    return () => {
+      stale = true;
+    };
+  }, [category, name, showSuggestions]);
 
   // Prefill the form when editing an existing item (?id=...).
   useEffect(() => {
@@ -163,6 +180,14 @@ function AddItemContent() {
     let found = false;
     setIsLookingUp(true);
     try {
+      const shared = await getSharedBarcode(code);
+      if (shared) {
+        found = true;
+        setName(shared.name);
+        setCategory(shared.category);
+        setScanNote('Found in your family list. Check the name, then add it.');
+        return;
+      }
       const res = await fetch(`/api/product-lookup?code=${code}`);
       const product = await res.json();
       if (product.found) {
@@ -170,12 +195,12 @@ function AddItemContent() {
         setName(product.name);
         setScanNote('Product found. Check the name, then add it.');
       } else if (product.unavailable) {
-        setScanNote('Could not look this up right now. Type the name and this barcode will be remembered.');
+        setScanNote('Could not look this up right now. Type the name and the family list will remember it.');
       } else {
-        setScanNote('Not in the product database. Type the name once and this barcode will be remembered.');
+        setScanNote('Not in the product database. Type the name once and the family list will remember it.');
       }
     } catch {
-      setScanNote('Could not look this up right now. Type the name and this barcode will be remembered.');
+      setScanNote('Could not look this up right now. Type the name and the family list will remember it.');
     } finally {
       setIsLookingUp(false);
       if (!found) nameRef.current?.focus();
@@ -234,6 +259,7 @@ function AddItemContent() {
       } else {
         await addItem(newItem);
       }
+      if (barcode) saveSharedBarcode(barcode, { name, category }, user.uid);
       if (scanNext) {
         resetForm();
         setScanNote(`${name} saved. Scan the next pack.`);
@@ -338,6 +364,25 @@ function AddItemContent() {
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-foreground">{g.name}</p>
                           <p className="truncate text-xs text-muted-foreground">{g.ta}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showSuggestions && medicineSuggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-card shadow-elevated">
+                    {medicineSuggestions.map((m) => (
+                      <button
+                        type="button"
+                        key={m.name}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => { setName(m.name); setShowSuggestions(false); }}
+                        className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-secondary"
+                      >
+                        <span className="text-xl">💊</span>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-foreground">{m.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{m.composition}</p>
                         </div>
                       </button>
                     ))}
