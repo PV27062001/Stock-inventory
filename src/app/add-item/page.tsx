@@ -2,7 +2,7 @@
 
 import { logger } from '@/lib/logger';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useInventory } from '@/firebase/firestore/use-inventory';
 import { useFileUpload } from '@/firebase/storage/use-file-upload';
@@ -16,11 +16,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Timestamp } from 'firebase/firestore';
-import { Upload, Pill, Utensils, Clock, ScanBarcode, Loader2 } from 'lucide-react';
+import { Pill, Utensils, Clock, ScanBarcode, Loader2, ChevronDown } from 'lucide-react';
 import { Unit } from '@/types';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { searchGroceries } from '@/lib/grocery-list';
-import { scanNativeBarcode } from '@/lib/native';
+import { BUILT_IN_SCANNER_BUILD, getNativeBuild, isNativeApp, scanNativeBarcode } from '@/lib/native';
+import { parseScannedCode } from '@/lib/scanned-code';
 
 const units: Unit[] = ['g', 'kg', 'l', 'ml', 'units'];
 
@@ -29,12 +30,21 @@ function AddItemContent() {
   const searchParams = useSearchParams();
   // Set when a scan matches an item already in stock, which opens it here for editing.
   const [scannedItemId, setScannedItemId] = useState<string | null>(null);
-  const editId = scannedItemId ?? searchParams?.get('id') ?? null;
+  const linkedId = searchParams?.get('id') ?? null;
+  const editId = scannedItemId ?? linkedId;
   const { user } = useAuthUser();
   const { addItem, updateItem, items } = useInventory();
   const { upload, loading: isUploading } = useFileUpload();
-  
-  const [category, setCategory] = useState<'Grocery' | 'Medicine' | '' >('');
+  // Read through refs because a scan finishes long after the render that started it.
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const scannedItemIdRef = useRef(scannedItemId);
+  scannedItemIdRef.current = scannedItemId;
+  const prefilledIdRef = useRef<string | null>(null);
+  const topUpRef = useRef(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const [category, setCategory] = useState<'Grocery' | 'Medicine'>('Grocery');
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState<Unit>('units');
@@ -54,6 +64,9 @@ function AddItemContent() {
   const [showTypedCode, setShowTypedCode] = useState(false);
   const [typedCode, setTypedCode] = useState('');
   const [scanNote, setScanNote] = useState('');
+  const [scannerNotice, setScannerNotice] = useState('');
+  const [showMore, setShowMore] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   useEffect(() => {
     const numDosage = Number(dosage || 1);
@@ -69,13 +82,16 @@ function AddItemContent() {
 
   // Prefill the form when editing an existing item (?id=...).
   useEffect(() => {
-    if (!editId) return;
+    if (!editId || prefilledIdRef.current === editId) return;
     const it = items.find((i) => i.id === editId);
     if (!it) return;
+    prefilledIdRef.current = editId;
     setCategory(it.category === 'Medicine' ? 'Medicine' : 'Grocery');
     setName(it.name || '');
     setBarcode(it.barcode || '');
-    setQuantity(it.quantity ?? 1);
+    setQuantity((it.quantity ?? 1) + (topUpRef.current ? 1 : 0));
+    topUpRef.current = false;
+    if (it.expiryDate || it.lowStockThreshold != null || it.imageUrl) setShowMore(true);
     if (it.unit) setUnit(it.unit);
     if (it.lowStockThreshold != null) setLowStockThreshold(it.lowStockThreshold);
     if (it.dosage != null) setDosage(it.dosage);
@@ -95,32 +111,68 @@ function AddItemContent() {
   };
 
   const startScan = async () => {
+    if (!isNativeApp()) {
+      setIsScanning(true);
+      return;
+    }
     setIsOpeningScanner(true);
+    const build = await getNativeBuild().catch(() => null);
+    if ((build ?? 0) < BUILT_IN_SCANNER_BUILD) {
+      setIsOpeningScanner(false);
+      setScannerNotice('Update the app for a much better scanner. This older one may not read barcodes.');
+      setIsScanning(true);
+      return;
+    }
     const result = await scanNativeBarcode();
     setIsOpeningScanner(false);
-    if (result?.code) handleBarcode(result.code);
-    else if (!result) setIsScanning(true); // native scanner unavailable, use the web one
+    if (result?.code) handleScanned(result.code);
+    else if (result?.typed) setShowTypedCode(true);
+    else if (result?.error) {
+      setShowTypedCode(true);
+      setScanNote(`Scanner problem: ${result.error}. Type the number under the barcode instead.`);
+    }
   };
 
-  const handleBarcode = async (code: string) => {
+  const handleScanned = (raw: string) => {
+    const scanned = parseScannedCode(raw);
+    if (!scanned) {
+      setIsScanning(false);
+      setScanNote('This code has no product number. Scan the barcode with lines, or type the name.');
+      return;
+    }
+    handleBarcode(scanned.code, scanned.expiry);
+  };
+
+  const handleBarcode = async (code: string, scannedExpiry?: string) => {
     setIsScanning(false);
     setShowTypedCode(false);
     setTypedCode('');
-    // Already stocked: open that item so the quantity is topped up, not duplicated.
-    const existing = items.find((item) => item.barcode === code);
+    // Already stocked: open that item with one more added, so it is topped up, not duplicated.
+    const existing = itemsRef.current.find((item) => item.barcode === code);
     if (existing) {
-      setScanNote('Already in your stock. Update the quantity below.');
-      setScannedItemId(existing.id);
+      setScanNote('Already in your stock, so 1 was added. Change the quantity if needed.');
+      if (existing.id === scannedItemIdRef.current) {
+        setQuantity((q) => q + 1);
+      } else {
+        topUpRef.current = true;
+        setScannedItemId(existing.id);
+      }
       return;
     }
 
     setBarcode(code);
     setScanNote('');
+    if (scannedExpiry) {
+      setExpiryDate(scannedExpiry);
+      setShowMore(true);
+    }
+    let found = false;
     setIsLookingUp(true);
     try {
       const res = await fetch(`/api/product-lookup?code=${code}`);
       const product = await res.json();
       if (product.found) {
+        found = true;
         setName(product.name);
         setScanNote('Product found. Check the name, then add it.');
       } else if (product.unavailable) {
@@ -132,12 +184,28 @@ function AddItemContent() {
       setScanNote('Could not look this up right now. Type the name and this barcode will be remembered.');
     } finally {
       setIsLookingUp(false);
+      if (!found) nameRef.current?.focus();
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !category || isSaving) return;
+  const resetForm = () => {
+    setScannedItemId(null);
+    prefilledIdRef.current = null;
+    setName('');
+    setBarcode('');
+    setQuantity(1);
+    setUnit('units');
+    setExpiryDate('');
+    setLowStockThreshold('');
+    setDosage(1);
+    setDailyAlert(false);
+    setReceipt(null);
+    setFileInputKey((key) => key + 1);
+    setShowMore(false);
+  };
+
+  const saveItem = async (scanNext: boolean) => {
+    if (!user || isSaving) return;
     setIsSaving(true);
     setError('');
 
@@ -156,9 +224,9 @@ function AddItemContent() {
       };
       if (imageUrl) newItem.imageUrl = imageUrl;
 
+      if (barcode) newItem.barcode = barcode;
       if (category === 'Grocery') {
         newItem.unit = unit;
-        if (barcode) newItem.barcode = barcode;
       } else if (category === 'Medicine') {
         newItem.dosage = Number(dosage) || null;
         newItem.dailyAlert = dailyAlert;
@@ -172,6 +240,13 @@ function AddItemContent() {
       } else {
         await addItem(newItem);
       }
+      if (scanNext) {
+        resetForm();
+        setScanNote(`${name} saved. Scan the next pack.`);
+        setIsSaving(false);
+        startScan();
+        return;
+      }
       // Land on the Inventory section (not the default Gold rates tab).
       router.push('/inventory#inventory');
     } catch (error) {
@@ -181,13 +256,22 @@ function AddItemContent() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveItem(false);
+  };
+
+  const saveAndScanNext = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (e.currentTarget.form?.reportValidity()) saveItem(true);
+  };
+
   const grocerySuggestions = category === 'Grocery' ? searchGroceries(name) : [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <AppHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" back backHref="/inventory#inventory" switchTo="rental" />
       <LoadingOverlay show={isSaving || isUploading} message="Saving inventory..." />
-      {isScanning && <BarcodeScanner onDetected={handleBarcode} onClose={() => setIsScanning(false)} />}
+      {isScanning && <BarcodeScanner onDetected={handleScanned} onClose={() => setIsScanning(false)} notice={scannerNotice} />}
 
       <main className="px-4 py-5 pb-24">
         {error && <p className="mb-4 rounded-lg border border-destructive/40 bg-destructive/15 px-4 py-3 text-base text-destructive">{error}</p>}
@@ -207,11 +291,10 @@ function AddItemContent() {
             </div>
           </div>
 
-          {category && (
-            <>
-             {category === 'Grocery' && !editId && (
+          <>
+             {!editId && (
                 <div className="space-y-2">
-                  <Button type="button" variant="outline" disabled={isLookingUp || isOpeningScanner} onClick={startScan} className="h-12 w-full gap-2 rounded-xl text-base">
+                  <Button type="button" disabled={isLookingUp || isOpeningScanner} onClick={startScan} className="h-14 w-full gap-2 rounded-xl text-lg font-bold">
                     {isLookingUp || isOpeningScanner ? <Loader2 className="h-5 w-5 animate-spin" /> : <ScanBarcode className="h-5 w-5" />}
                     {isLookingUp ? 'Looking up product…' : isOpeningScanner ? 'Opening scanner…' : 'Scan barcode'}
                   </Button>
@@ -238,6 +321,7 @@ function AddItemContent() {
                 <Label htmlFor="name">{category} Name</Label>
                 <Input
                   id="name"
+                  ref={nameRef}
                   value={name}
                   onChange={(e) => { setName(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
@@ -302,18 +386,6 @@ function AddItemContent() {
                 </div>
               )}
 
-              {/* More Common Fields */}
-               <div className="space-y-2">
-                <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
-                <Input id="expiryDate" type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
-                {barcode && <p className="text-xs text-muted-foreground">Barcodes don't include the expiry date. Copy it from the pack.</p>}
-              </div>
-
-               <div className="space-y-2">
-                <Label htmlFor="lowStockThreshold">Low Stock Alert Threshold (Optional)</Label>
-                <Input id="lowStockThreshold" type="number" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value === '' ? '' : Number(e.target.value))} placeholder="e.g., 5" />
-              </div>
-              
               {category === 'Medicine' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border p-4">
@@ -337,17 +409,40 @@ function AddItemContent() {
                 </div>
               )}
 
-              {/* Image Upload - still optional */}
-              <div className="space-y-2">
-                <Label htmlFor="receipt">Image (Optional)</Label>
-                <Input id="receipt" type="file" accept="image/*" onChange={(e) => setReceipt(e.target.files ? e.target.files[0] : null)} className="flex-1" />
-              </div>
+              {/* Optional details stay folded away so a pack is quick to add. */}
+              <button type="button" aria-expanded={showMore} onClick={() => setShowMore((open) => !open)} className="flex min-h-11 w-full items-center justify-between text-base font-semibold text-primary">
+                More details
+                <ChevronDown className={`h-5 w-5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+              </button>
+              {showMore && (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
+                    <Input id="expiryDate" type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+                    {barcode && !expiryDate && <p className="text-xs text-muted-foreground">Barcodes don't include the expiry date. Copy it from the pack.</p>}
+                  </div>
 
-              <Button type="submit" className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold hover:bg-emerald-600" disabled={isUploading || isSaving || !category}>
+                  <div className="space-y-2">
+                    <Label htmlFor="lowStockThreshold">Low Stock Alert Threshold (Optional)</Label>
+                    <Input id="lowStockThreshold" type="number" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value === '' ? '' : Number(e.target.value))} placeholder="e.g., 5" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="receipt">Image (Optional)</Label>
+                    <Input key={fileInputKey} id="receipt" type="file" accept="image/*" onChange={(e) => setReceipt(e.target.files ? e.target.files[0] : null)} className="flex-1" />
+                  </div>
+                </div>
+              )}
+
+              <Button type="submit" className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold hover:bg-emerald-600" disabled={isUploading || isSaving}>
                 {isSaving || isUploading ? 'Saving...' : editId ? 'Update item' : `Add ${category}`}
               </Button>
-            </>
-          )}
+              {!linkedId && (
+                <Button type="button" variant="outline" onClick={saveAndScanNext} className="h-12 w-full gap-2 rounded-xl text-base font-bold" disabled={isUploading || isSaving}>
+                  <ScanBarcode className="h-5 w-5" /> Save & scan next
+                </Button>
+              )}
+          </>
         </form>
       </main>
     </div>

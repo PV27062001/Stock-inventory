@@ -53,18 +53,20 @@ export const setNativeSystemBars = async (style: SystemBarsStyle) => {
   await SystemBars.setStyle(style).catch(() => {});
 };
 
-export type NativeScanResult = { code?: string; cancelled?: boolean };
+export type NativeScanResult = { code?: string; typed?: boolean; cancelled?: boolean; error?: string };
+
+/** First APK whose scanner is built in. Older ones depend on a Google download that can fail. */
+export const BUILT_IN_SCANNER_BUILD = 6;
 
 /**
- * Scans with Google's native scanner (NativeBarcodePlugin in the APK). Returns null when it can't
- * run, such as an older APK, no Play services, or the scanner module failing to download, so the
- * caller can use the web scanner instead.
+ * Scans with the camera screen in the APK (NativeBarcodePlugin). Returns null outside the app. A
+ * failure comes back as `error` so the person sees the reason instead of a silent fallback.
  */
 export const scanNativeBarcode = async (): Promise<NativeScanResult | null> => {
   if (!isNativeApp()) return null;
   const { registerPlugin } = await import('@capacitor/core');
   const NativeBarcode = registerPlugin<{ scan: () => Promise<NativeScanResult> }>('NativeBarcode');
-  return NativeBarcode.scan().catch(() => null);
+  return NativeBarcode.scan().catch((e: Error) => ({ error: e?.message || 'The scanner could not start' }));
 };
 
 /** The installed APK's versionCode, used to tell the user a newer shell exists. */

@@ -14,7 +14,7 @@ const MAX_FRAME_WIDTH = 960;
  * Full-screen live camera scanner for product barcodes (EAN / UPC). The number can also be typed,
  * for when the camera is refused or a barcode is too damaged to read.
  */
-export function BarcodeScanner({ onDetected, onClose }: { onDetected: (code: string) => void; onClose: () => void }) {
+export function BarcodeScanner({ onDetected, onClose, notice }: { onDetected: (code: string) => void; onClose: () => void; notice?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
   const onDetectedRef = useRef(onDetected);
@@ -126,6 +126,8 @@ export function BarcodeScanner({ onDetected, onClose }: { onDetected: (code: str
           <X className="h-6 w-6" />
         </button>
       </div>
+
+      {notice && <p className="mx-4 mb-2 rounded-xl bg-amber-400 px-3 py-2 text-sm font-semibold text-black">{notice}</p>}
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <video ref={videoRef} muted playsInline className="absolute inset-0 h-full w-full object-cover" />
