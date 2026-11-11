@@ -16,6 +16,7 @@ import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
 import { PhotoPicker } from '@/components/kirayabook/photo-picker';
+import { IdCardViewer } from '@/components/app/id-card-viewer';
 import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function EditCustomerPage() {
@@ -200,7 +201,7 @@ export default function EditCustomerPage() {
                     </div>
                     <div className='mt-2'>
                         {aadhaarFile ? <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.aadhaarPhotoUrl && <a href={customer.aadhaarPhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.aadhaarPhotoUrl} alt="Uploaded Aadhaar" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.aadhaarPhotoUrl && <IdCardViewer url={customer.aadhaarPhotoUrl} label="Aadhaar" />) }
                     </div>
                 </div>
 
@@ -214,7 +215,7 @@ export default function EditCustomerPage() {
                     </div>
                     <div className='mt-2'>
                         {panFile ? <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.panPhotoUrl && <a href={customer.panPhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.panPhotoUrl} alt="Uploaded PAN" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.panPhotoUrl && <IdCardViewer url={customer.panPhotoUrl} label="PAN" />) }
                     </div>
                 </div>
 
@@ -228,7 +229,7 @@ export default function EditCustomerPage() {
                     </div>
                     <div className='mt-2'>
                         {licenceFile ? <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.drivingLicencePhotoUrl && <a href={customer.drivingLicencePhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.drivingLicencePhotoUrl} alt="Uploaded Licence" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.drivingLicencePhotoUrl && <IdCardViewer url={customer.drivingLicencePhotoUrl} label="Driving Licence" />) }
                     </div>
                 </div>
             </div>

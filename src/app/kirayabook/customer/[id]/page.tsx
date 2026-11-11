@@ -5,13 +5,14 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCustomerById, getRentalsByCustomerId, deleteCustomer, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { ArrowLeft, Clock3, DollarSign, CheckCircle, AlertTriangle, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Clock3, DollarSign, CheckCircle, AlertTriangle, Trash2, Loader2, CheckCircle2, Pencil, Expand } from 'lucide-react';
 import { formatMobile, isVerificationStale } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { RENTALS_ENABLED } from '@/lib/features';
 import { BrandLoader, DataLoader } from '@/components/app/brand-loader';
 import { IdCardViewer } from '@/components/app/id-card-viewer';
+import { PhotoViewer } from '@/components/app/photo-viewer';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 
 export default function CustomerDetailPage() {
@@ -22,6 +23,7 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPhoto, setShowPhoto] = useState(false);
   const [isRentalsLoading, setIsRentalsLoading] = useState(true);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -107,18 +109,29 @@ export default function CustomerDetailPage() {
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <h1 className="text-lg font-bold ml-4">{customer.name}</h1>
-        <Button variant="link" onClick={() => router.push(`/kirayabook/edit-customer/${customerId}`)} className="ml-auto text-primary hover:text-primary/80">
-          Edit
-        </Button>
+        <button
+          type="button"
+          onClick={() => router.push(`/kirayabook/edit-customer/${customerId}`)}
+          className="ml-auto flex h-11 items-center gap-1.5 rounded-xl bg-white/15 px-4 text-base font-semibold text-white hover:bg-white/25 active:scale-95"
+        >
+          <Pencil className="h-4 w-4" /> Edit
+        </button>
         <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(true)} aria-label="Delete customer" className="text-destructive hover:bg-destructive/10">
           <Trash2 className="w-5 h-5" />
         </Button>
       </header>
 
+      {showPhoto && customer.photoUrl && <PhotoViewer url={customer.photoUrl} label={customer.name} onClose={() => setShowPhoto(false)} />}
+
       <main className="p-4 pb-44">
         <div className="flex flex-col items-center mb-6">
           {isUsablePhoto(customer.photoUrl) ? (
-            <img src={customer.photoUrl} alt="Customer Photo" className="w-28 h-28 rounded-full object-cover shadow-elevated ring-4 ring-primary/10" />
+            <button type="button" onClick={() => setShowPhoto(true)} aria-label="View photo" className="relative rounded-full active:scale-95">
+              <img src={customer.photoUrl} alt="Customer Photo" className="w-28 h-28 rounded-full object-cover shadow-elevated ring-4 ring-primary/10" />
+              <span className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated ring-2 ring-background">
+                <Expand className="h-4 w-4" />
+              </span>
+            </button>
           ) : (
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#4C9AFF] to-[#1A73E8] flex items-center justify-center text-4xl font-bold text-white shadow-primary-glow">
               {getInitials(customer.name)}
