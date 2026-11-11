@@ -32,7 +32,6 @@ export const addInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
 };
 
 export const getInventoryItems = async (): Promise<InventoryItem[]> => {
-  if (typeof window !== 'undefined' && localStorage.getItem('zzmock')) return [{ id: 'k1', name: 'Big vessel', price: 50 }, { id: 'k2', name: 'Ladle', price: 10 }] as unknown as InventoryItem[];
     if (inventoryCache) {
         return inventoryCache;
     }
