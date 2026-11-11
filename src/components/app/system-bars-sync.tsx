@@ -11,8 +11,10 @@ import { isNativeApp, setNativeSystemBars } from '@/lib/native';
  * what happens to be on screen, so it cannot be wrong while a page is loading or scrolling.
  */
 
+// Null for a see-through colour, which would otherwise read as black.
 const toHex = (rgb: string) => {
-  const m = rgb.match(/(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+  const m = rgb.match(/(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+))?/);
+  if (m?.[4] !== undefined && Number(m[4]) === 0) return null;
   return m ? '#' + [m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, '0')).join('') : null;
 };
 
@@ -45,8 +47,9 @@ export function SystemBarsSync() {
       const strip = document.getElementById('status-bar-strip');
       const statusColor = strip && toHex(getComputedStyle(strip).backgroundColor);
       if (!statusColor) return;
-      // The bottom bar joins the app's bottom nav where there is one, else the page itself.
-      const base = document.querySelector('nav.fixed') ?? document.body;
+      // The bottom bar joins the app's bottom nav where there is one, else the page itself. Found by
+      // id: a page's own fixed element (such as the A-Z index on Customers) must never be picked.
+      const base = document.getElementById('app-bottom-nav') ?? document.body;
       const navColor = toHex(getComputedStyle(base).backgroundColor) ?? statusColor;
       const key = statusColor + navColor;
       if (key === last) return;

@@ -4,12 +4,13 @@ import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Phone, Search, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
+import { Plus, Phone, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
 import { formatMobile, isVerificationStale, toCallNumber, toWhatsAppNumber } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Customer, getAllCustomers } from '@/firebase/kirayabook/firestore-service';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
+import { ModuleHeader } from '@/components/ui/module-header';
+import { NumberSearch } from '@/components/app/number-search';
 
 const FAVOURITES_KEY = 'kirayabook.customers.favourites';
 const RECENTS_KEY = 'kirayabook.customers.recents';
@@ -205,17 +206,15 @@ export default function CustomersPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="bg-card sticky top-0 z-10 border-b border-border flex items-center justify-between px-4 py-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">KirayaBook</p>
-          <h1 className="text-xl font-bold">Customers</h1>
-        </div>
-        <Link href="/kirayabook/add-customer">
-          <Button className="rounded-full">
-            <Plus className="w-4 h-4 mr-1" /> Add new
-          </Button>
-        </Link>
-      </header>
+      <ModuleHeader
+        title="Customers"
+        subtitle="Ledger"
+        right={
+          <Link href="/kirayabook/add-customer" className="flex h-11 items-center gap-1 rounded-xl bg-white/15 px-4 text-base font-semibold text-white hover:bg-white/25">
+            <Plus className="h-5 w-5" /> Add new
+          </Link>
+        }
+      />
 
       <main className="max-w-md mx-auto px-4 py-4 pb-24">
         <section className="grid grid-cols-2 gap-3 mb-4">
@@ -235,14 +234,8 @@ export default function CustomersPage() {
           </Link>
         </section>
 
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, mobile or profession"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-12 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
+        <div className="mb-6">
+          <NumberSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
 
         {showQuickSections && favourites.length > 0 && (

@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllCustomers, getRecentRentals, getRentalsByDate, getLedgerTotals, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { Input } from '@/components/ui/input';
 import { Search, Settings, LogOut, LayoutGrid, Plus, CalendarIcon, X, UserPlus, Users, Warehouse, ChevronRight, User, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ModuleHeader } from '@/components/ui/module-header';
+import { NumberSearch } from '@/components/app/number-search';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { signOut } from '@/firebase/auth/auth-service';
 import { RENTALS_ENABLED } from '@/lib/features';
@@ -205,13 +205,7 @@ export default function LedgerHomePage() {
         {/* Search */}
         <div className="relative px-4 py-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, mobile or profession"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
+            <NumberSearch value={searchTerm} onChange={setSearchTerm} />
             {searchTerm.length > 0 && searchTerm.length < 4 && (
               <p className="text-xs text-muted-foreground mt-1">Enter at least 4 characters to search</p>
             )}
