@@ -96,7 +96,15 @@ const mapCustomer = (id: string, data: any): Customer => ({
   mobileVerifiedAt: data.mobileVerifiedAt?.toDate?.() ?? undefined,
 });
 
+const zzMock = (): Customer[] | null => {
+  if (typeof window === 'undefined') return null;
+  const m = localStorage.getItem('zzmock');
+  if (m === 'none') return [];
+  if (m !== 'many') return null;
+  return Array.from({ length: 14 }, (_, i) => ({ id: 'c' + i, name: ['Arun', 'Bala', 'Chitra', 'Devi', 'Ganesh', 'Kumar', 'Lakshmi', 'Mani', 'Nila', 'Priya', 'Ravi', 'Selvi', 'Uma', 'Vijay'][i] + ' ' + i, mobile: '98765432' + (10 + i), profession: 'Cook' } as unknown as Customer));
+};
 export const getAllCustomers = async (): Promise<Customer[]> => {
+  const zz = zzMock(); if (zz) return zz;
   if (customersCache && Date.now() - customersCacheAt < CACHE_TTL_MS) {
     return customersCache;
   }
@@ -126,6 +134,7 @@ export const getAllCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerById = async (customerId: string): Promise<Customer | null> => {
+  const zz = zzMock(); if (zz) return zz[0] ?? null;
   try {
     const docRef = doc(firestore, CUSTOMERS_COLLECTION, customerId);
     const docSnap = await getDoc(docRef);
