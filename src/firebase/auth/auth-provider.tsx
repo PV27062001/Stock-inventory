@@ -16,7 +16,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (localStorage.getItem('zzuser')) { const t = setTimeout(() => { setUser({ uid: 'zz', email: 'zz@x', displayName: 'Test' } as unknown as User); setLoading(false); }, 500); return () => clearTimeout(t); }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
