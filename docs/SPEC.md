@@ -11,7 +11,7 @@ This repo is **public**: no secrets, keys or family data in any file. `ARCHITECT
 Paste this, with the module filled in:
 
 > Read `docs/SPEC.md` and `docs/specs/<module>.md` in `E:\Git Repos\GIT_All\SimpleStock`.
-> Follow the design rules (SPEC §5) and the proof rules (SPEC §8). Task: <what you want>.
+> Follow the design rules (SPEC §5), keep the specs current (SPEC §8) and the proof rules (SPEC §9). Task: <what you want>.
 
 | Module spec | Covers |
 |---|---|
@@ -132,7 +132,16 @@ AI key on the server. Whenever code reads a new variable, add it in Vercel too.
   and the live site afterwards. A failed deploy leaves the old version live.
 - Android: see [08-android-app](specs/08-android-app.md).
 
-## 8. How changes are proven
+## 8. Keeping the specs current
+
+Every change updates the specs in the same commit as the code:
+- the module spec: new or changed screens, behaviour, files, data fields, verify steps, open items;
+- this file: anything shared (data, design rules, environment variables, deploy steps, open items).
+
+Mark a fixed open item as done by removing it, and add newly found problems. A change is not done
+while a spec still describes the old behaviour.
+
+## 9. How changes are proven
 
 Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
 
@@ -148,7 +157,7 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
    `npm run build` must pass.
 6. Report what was proven and what was not. A simulated test is not a real phone.
 
-## 9. Open items (12 Nov 2026)
+## 10. Open items (12 Nov 2026)
 
 - Vercel failed several pushes since 6 Nov, while commits containing test code deployed. The
   reason is only in the Vercel dashboard. Confirm the live site is the latest clean commit.

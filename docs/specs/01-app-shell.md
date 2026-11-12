@@ -47,5 +47,5 @@ language, system bars, bottom nav, install and update banners, and notifications
 - Sign-in with an allowed and a not-allowed account.
 
 ## Open
-- Dark mode on Ledger screens other than home is not yet measured (SPEC §9).
+- Dark mode on Ledger screens other than home is not yet measured (SPEC §10).
 - Allowlist empty means everyone gets in on the client (SPEC §4).
