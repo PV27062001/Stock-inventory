@@ -52,7 +52,9 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 
 - The APK always loads `https://amman-samiyana-kadai.vercel.app`, so **web changes reach phones on
   the next app launch**. Only native changes need a new APK.
-- Production deploys from branch **`feature/mobile-app-change`**, not `main`.
+- **Production is deployed manually** by the owner. Pushes to `feature/mobile-app-change` create
+  Vercel **Preview** deployments, which fail because Preview has no environment
+  variables (`auth/invalid-api-key`). A failed Preview is expected and harmless.
 - `src/lib/native.ts` is the only place web code talks to native plugins; every helper falls back
   to a web behaviour in a normal browser.
 - Module colour and the phone's system bars are set from the route (`SystemBarsSync`).
@@ -128,8 +130,12 @@ AI key on the server. Whenever code reads a new variable, add it in Vercel too.
 ## 7. Build, deploy and release
 
 - `npm run build` must pass after every code change, before the work is called done.
-- Web: push to `feature/mobile-app-change`; Vercel deploys it. Check the commit's status on GitHub
-  and the live site afterwards. A failed deploy leaves the old version live.
+- Web: commit and push to `feature/mobile-app-change` (Preview fails, as expected), then the owner
+  deploys production manually.
+- **Before a manual production deploy**, the folder must be clean: `git status` shows nothing, and
+  `grep -r "zzuser\|zzmock\|zz-audit" src` finds nothing. A manual deploy uploads whatever is in the
+  folder, so test code present at that moment goes live.
+- After deploying, check the live site (for example `/api/product-lookup?code=8901063029286`).
 - Android: see [08-android-app](specs/08-android-app.md).
 
 ## 8. Keeping the specs current
@@ -159,8 +165,8 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
 
 ## 10. Open items (12 Nov 2026)
 
-- Vercel failed several pushes since 6 Nov, while commits containing test code deployed. The
-  reason is only in the Vercel dashboard. Confirm the live site is the latest clean commit.
+- **Production currently contains test code** (`zzuser`, `zzmock`: login bypass) from a manual
+  deploy made while a test harness was applied. Redeploy production from a clean folder.
 - Not yet proven on a real phone: the APK 1.5 scanner, the number pad, the photo viewer.
 - The `barcodes` block in `firestore.rules` must be published by hand.
 - Dark mode on Ledger: Ledger home was measured dark with a realistic sign-in. An earlier "Ledger
