@@ -16,6 +16,7 @@ import { processReceipt } from '@/ai/flows/receipt-processor';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { withAuth } from '@/components/Auth/with-auth';
+import { PageHeader, headerButtonClass } from '@/components/ui/page-header';
 
 function AddItemPage() {
   const { t } = useLanguage();
@@ -88,8 +89,9 @@ function AddItemPage() {
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2 justify-between">
-        <h1 className="text-lg font-bold">{t('addItem')}</h1>
+      <PageHeader
+        title={t('addItem')}
+        actions={
         <div className="relative">
           <Input 
             type="file" 
@@ -101,13 +103,14 @@ function AddItemPage() {
           />
           <Label 
             htmlFor="receipt-upload" 
-            className="flex items-center gap-2 bg-primary/10 text-primary px-4 h-12 rounded-xl font-bold cursor-pointer hover:bg-primary/20 transition-colors"
+            className={`${headerButtonClass()} cursor-pointer`}
           >
-            {isScanning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+            {isScanning ? <Loader2 className="animate-spin" /> : <Camera />}
             {t('scanReceipt')}
           </Label>
         </div>
-      </header>
+        }
+      />
 
       <main className="p-4">
       <Card className="p-4 space-y-6 border-none shadow-sm">

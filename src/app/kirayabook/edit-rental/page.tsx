@@ -5,7 +5,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getRental, updateRental, Rental, RentalItem } from '@/firebase/kirayabook/firestore-service';
 import { useInventory } from '@/hooks/use-inventory';
-import { ArrowLeft, Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -115,12 +116,7 @@ function EditRentalContent() {
 
   return (
     <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
-      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-lg font-bold ml-4">Edit Rental Entry</h1>
-        </header>
+      <PageHeader title="Edit Rental Entry" />
 
         <main className="p-4 pb-44">
             {/* Rented Items Section */}

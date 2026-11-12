@@ -8,7 +8,7 @@ import { useInventory } from '@/firebase/firestore/use-inventory';
 import { getSharedBarcode, saveSharedBarcode } from '@/firebase/firestore/barcode-list';
 import { useFileUpload } from '@/firebase/storage/use-file-upload';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
-import { AppHeader } from '@/components/app/app-header';
+import { PageHeader } from '@/components/ui/page-header';
 import { LoadingOverlay } from '@/components/app/loading-overlay';
 import { BarcodeScanner } from '@/components/app/barcode-scanner';
 import { Button } from '@/components/ui/button';
@@ -289,7 +289,7 @@ function AddItemContent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" back backHref="/inventory#inventory" switchTo="rental" />
+      <PageHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" backHref="/inventory#inventory" />
       <LoadingOverlay show={isSaving || isUploading} message="Saving inventory..." />
       {isScanning && <BarcodeScanner onDetected={handleScanned} onClose={() => setIsScanning(false)} notice={scannerNotice} />}
 

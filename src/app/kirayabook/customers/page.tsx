@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Customer, getAllCustomers } from '@/firebase/kirayabook/firestore-service';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 import { ModuleHeader } from '@/components/ui/module-header';
+import { HeaderButton } from '@/components/ui/page-header';
 import { NumberSearch } from '@/components/app/number-search';
 
 const FAVOURITES_KEY = 'kirayabook.customers.favourites';
@@ -209,11 +210,7 @@ export default function CustomersPage() {
       <ModuleHeader
         title="Customers"
         subtitle="Ledger"
-        right={
-          <Link href="/kirayabook/add-customer" className="flex h-11 items-center gap-1 rounded-xl bg-white/15 px-4 text-base font-semibold text-white hover:bg-white/25">
-            <Plus className="h-5 w-5" /> Add new
-          </Link>
-        }
+        right={<HeaderButton icon={Plus} label="Add" href="/kirayabook/add-customer" />}
       />
 
       <main className="max-w-md mx-auto px-4 py-4 pb-24">

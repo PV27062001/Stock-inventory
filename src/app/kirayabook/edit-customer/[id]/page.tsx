@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCustomerById, updateCustomer, Customer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service'; // Assuming this exists and works
-import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMemo } from 'react'; // Import useMemo
@@ -118,12 +119,7 @@ export default function EditCustomerPage() {
 
   return (
     <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
-        <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-lg font-bold ml-4">Edit Customer</h1>
-        </header>
+        <PageHeader title="Edit Customer" />
 
         <main className="p-4 pb-44">
             <div className="space-y-4">

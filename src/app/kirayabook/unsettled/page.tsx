@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllCustomers, getUnsettledRentals, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { AppHeader } from '@/components/app/app-header';
+import { PageHeader } from '@/components/ui/page-header';
 import { BrandLoader } from '@/components/app/brand-loader';
 import Link from 'next/link';
 import { formatMobile } from '@/lib/phone';
@@ -89,11 +89,11 @@ export default function UnsettledPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader title="Unsettled Accounts" subtitle="Ledger" back backHref="/kirayabook" switchTo="inventory" />
       
-      {/* Horizontal filter chips */}
-      <div className="sticky top-[calc(73px+env(safe-area-inset-top))] z-10 bg-background/80 backdrop-blur-md border-b border-border py-3">
-        <div className="flex overflow-x-auto gap-2 px-4 no-scrollbar">
+      
+      <PageHeader title="Unsettled Accounts" subtitle="Ledger" backHref="/kirayabook">
+        {/* Filter chips live inside the header, so they stay pinned under it at any header height. */}
+        <div className="-mx-4 flex overflow-x-auto gap-2 px-4 no-scrollbar">
           <button
             onClick={() => setActiveFilter('All')}
             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
@@ -116,7 +116,7 @@ export default function UnsettledPage() {
                 {bucket.label}
                 {count > 0 && (
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                    activeFilter === bucket.label ? 'bg-white/20 text-white' : 'bg-background text-muted-foreground'
+                    activeFilter === bucket.label ? 'bg-primary-foreground text-primary' : 'bg-background text-muted-foreground'
                   }`}>
                     {count}
                   </span>
@@ -125,7 +125,7 @@ export default function UnsettledPage() {
             );
           })}
         </div>
-      </div>
+      </PageHeader>
 
       <main className="px-4 py-6 pb-24 max-w-md mx-auto space-y-8">
         {visibleRentals.length === 0 ? (

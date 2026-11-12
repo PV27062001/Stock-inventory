@@ -49,8 +49,8 @@ Turn a pack into a named item with as little typing as possible.
 - Lookup route: known codes `8901063029286` (Jimjam) and `8901030987335` (3 Roses), an unknown code,
   Scanbot down, all sources down, a cross-site request (403).
 - Parser: plain, GS1 with and without separators, brackets, digital link, website QR.
+- Real phone: APK 1.5 (build 6) read barcodes on the owner's phone (12 Nov 2026). In APK 1.4 the camera
+  opened but did not read.
 
 ## Open
-- The native scanner has never been tested on a real phone. Earlier, the camera opened but did not
-  read barcodes (APK 1.4).
 - The `barcodes` Firestore rule must be published by hand.

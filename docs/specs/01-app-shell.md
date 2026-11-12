@@ -20,7 +20,11 @@ language, system bars, bottom nav, install and update banners, and notifications
   gesture-bar strips.
 - `src/components/app/system-bars-sync.tsx`: sets `data-module` from the route and sends the
   status and navigation bar colours to the phone (from `#status-bar-strip` and `#app-bottom-nav`).
-- `src/components/ui/module-header.tsx`: the tab-screen header with the Ledger/Personal switch.
+- `src/components/ui/module-header.tsx`: the main-screen header with the Ledger/Personal switch and
+  the Settings button (top-right).
+- `src/components/ui/page-header.tsx`: `PageHeader` (Back, actions, title) for every other screen,
+  plus `HeaderButton`, `BackButton`, `SettingsButton` and `headerButtonClass` (SPEC §5).
+  The old `app-header.tsx`, which had an icon-only settings menu, was removed.
 - `src/components/ui/bottom-nav.tsx` (`#app-bottom-nav`), `conditional-bottom-nav.tsx` (shown
   only when signed in, and only under `/kirayabook`).
 - `src/components/Auth/with-auth.tsx`: guards private pages; `src/lib/allowed-users.ts`.

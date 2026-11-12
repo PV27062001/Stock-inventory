@@ -2,17 +2,16 @@
 
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Printer, Share2 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { Download, Printer, Share2 } from 'lucide-react';
+import { HeaderButton, PageHeader } from '@/components/ui/page-header';
 import { getRental, getCustomerById, type Rental, type Customer } from '@/firebase/kirayabook/firestore-service';
-import { Button } from '@/components/ui/button';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { PrintableBill } from '@/components/kirayabook/printable-bill';
 import { buildPrintableBill } from '@/lib/printable-bill';
 import { billNo } from '@/lib/bill';
 
 export default function RentalBillPage() {
-  const router = useRouter();
   const params = useParams();
   const rentalId = (params?.id as string) || '';
 
@@ -105,27 +104,22 @@ export default function RentalBillPage() {
 
   return (
     <div className="min-h-screen bg-secondary/40">
-      <header className="no-print sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-card p-4">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-          <h1 className="text-base font-bold">Rental Bill</h1>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handlePrint} title="Print / Save as PDF">
-            <Printer className="h-5 w-5" />
-          </Button>
-          <Button
-            onClick={handleExportJpeg}
-            disabled={isExporting}
-            className="gap-2"
-          >
-            {isExporting ? <Download className="h-4 w-4 animate-bounce" /> : <Share2 className="h-4 w-4" />}
-            {isExporting ? 'Preparing…' : 'WhatsApp / JPEG'}
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        title="Rental Bill"
+        className="no-print"
+        actions={
+          <>
+            <HeaderButton icon={Printer} label="Print" onClick={handlePrint} title="Print / Save as PDF" />
+            <HeaderButton
+              icon={isExporting ? Download : Share2}
+              label={isExporting ? 'Wait…' : 'Share'}
+              onClick={handleExportJpeg}
+              disabled={isExporting}
+              title="Share on WhatsApp as a picture"
+            />
+          </>
+        }
+      />
 
       {exportMessage && (
         <p className="no-print px-4 py-2 text-center text-sm text-muted-foreground">{exportMessage}</p>

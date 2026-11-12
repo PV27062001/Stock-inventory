@@ -1,18 +1,15 @@
 
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, BookOpen, LayoutGrid, LogOut, Package2, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronRight, BookOpen, Package2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { SettingsButton } from '@/components/ui/page-header';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { useLanguage } from '@/hooks/use-language';
 import { useStartPage } from '@/hooks/use-start-page';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { withAuth } from '@/components/Auth/with-auth';
-import { signOut } from '@/firebase/auth/auth-service';
 import { useEffect } from 'react';
 
 function HomePage() {
@@ -33,10 +30,6 @@ function HomePage() {
     router.push(value === 'inventory' ? '/inventory' : '/kirayabook');
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    router.push('/login');
-  };
 
   if (!loaded || startPage !== 'ask') {
     return <BrandLoader />;
@@ -46,32 +39,12 @@ function HomePage() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 border-b border-border bg-card px-4 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">{t('welcome') || 'Welcome'}</p>
             <h1 className="text-xl font-bold">Sri Amman</h1>
             <p className="mt-1 text-sm text-muted-foreground">{t('homeOverview') || 'One dashboard for inventory and rentals.'}</p>
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-12 w-12 text-foreground hover:bg-secondary" aria-label="Open quick menu">
-                <LayoutGrid className="h-6 w-6" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 border-border bg-card p-2 text-foreground">
-              <DropdownMenuItem asChild className="min-h-12 cursor-pointer rounded-md text-base focus:bg-secondary focus:text-foreground">
-                <Link href="/settings">
-                  <Settings className="mr-2 h-5 w-5" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem onSelect={handleLogout} className="min-h-12 cursor-pointer rounded-md text-base text-destructive focus:bg-destructive/15 focus:text-destructive">
-                <LogOut className="mr-2 h-5 w-5" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SettingsButton />
         </div>
       </header>
 

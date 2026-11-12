@@ -3,9 +3,8 @@
 import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { getAllCustomers, getRecentRentals, getRentalsByDate, getLedgerTotals, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { Search, Settings, LogOut, LayoutGrid, Plus, CalendarIcon, X, UserPlus, Users, Warehouse, ChevronRight, User, BadgeCheck } from 'lucide-react';
+import { Search, Plus, CalendarIcon, X, UserPlus, Users, Warehouse, ChevronRight, User, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -13,8 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { NumberSearch } from '@/components/app/number-search';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { signOut } from '@/firebase/auth/auth-service';
 import { RENTALS_ENABLED } from '@/lib/features';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 
@@ -32,7 +29,6 @@ const getStatusBadgeColor = (status: string) => {
 };
 
 export default function LedgerHomePage() {
-  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -135,30 +131,7 @@ export default function LedgerHomePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ModuleHeader
-        title="Ledger"
-        subtitle="Rental book"
-        right={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl bg-white/15 text-white hover:bg-white/25" aria-label="Menu">
-                <LayoutGrid className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-border bg-card p-2 text-foreground">
-              <DropdownMenuItem onSelect={() => router.push('/settings')} className="min-h-11 cursor-pointer rounded-md text-base focus:bg-secondary focus:text-foreground">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem onSelect={async () => { await signOut(); router.push('/login'); }} className="min-h-11 cursor-pointer rounded-md text-base text-destructive focus:bg-destructive/15 focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-      />
+      <ModuleHeader title="Ledger" subtitle="Rental book" />
 
       <main className="max-w-md mx-auto pb-24">
         {/* Stats Cards */}

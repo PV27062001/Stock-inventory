@@ -7,7 +7,7 @@ import { CalendarIcon, Minus, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { addRental, Customer, getAllCustomers, RentalItem } from '@/firebase/kirayabook/firestore-service';
 import { getInventoryItems, InventoryItem as RentableInventoryItem } from '@/firebase/kirayabook/inventory-service';
-import { AppHeader } from '@/components/app/app-header';
+import { PageHeader } from '@/components/ui/page-header';
 import { LoadingOverlay } from '@/components/app/loading-overlay';
 import { SuccessOverlay } from '@/components/app/success-overlay';
 import { Button } from '@/components/ui/button';
@@ -154,7 +154,7 @@ export function RentalForm() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader title="New Rental" subtitle="Rental" back switchTo="inventory" />
+      <PageHeader title="New Rental" subtitle="Rental" />
       <LoadingOverlay show={isSaving} message="Saving rental..." />
       <SuccessOverlay show={success} message="Rental created" onDone={() => router.push('/kirayabook/rentals')} />
 

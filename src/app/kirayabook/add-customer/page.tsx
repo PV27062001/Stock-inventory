@@ -8,7 +8,8 @@ import { addCustomer, CustomerTooLargeError } from '@/firebase/kirayabook/firest
 import { uploadFile } from '@/firebase/kirayabook/storage-service';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
 import { PhotoPicker } from '@/components/kirayabook/photo-picker';
@@ -86,12 +87,7 @@ export default function AddCustomerPage() {
 
   return (
     <div className="bg-background min-h-screen text-foreground">
-      <header className="sticky top-0 z-20 flex min-h-16 items-center gap-3 border-b border-border bg-card px-4 py-2">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-lg font-bold">Add New Customer</h1>
-      </header>
+      <PageHeader title="Add New Customer" />
 
       <div className="space-y-6 p-4">
         <div className="flex justify-center mb-8">

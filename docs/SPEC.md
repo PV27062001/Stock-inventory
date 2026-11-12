@@ -91,12 +91,26 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 ### Top of every screen
 - Every screen has a solid `--app-bar` top bar joined to the status bar. The status icons are
   always white and never flip. Never add a white top bar or sample on-screen colours.
-- Bottom-nav tab screens use `ModuleHeader` (title, subtitle, right action, pinned
-  Ledger/Personal switch). Switching tabs must never change the header's size.
-- Detail and form screens use `<header className="sticky top-0 …">`; `header.sticky` re-points the
-  theme tokens so everything inside renders white on the bar.
-- Top-bar actions are **buttons, never text links**: 44px tall, `bg-white/15 text-white rounded-xl`,
-  with an icon.
+- Only two headers exist, both in shared components. Never hand-write a `<header>` on a page.
+  - **Main screens** (home `/` and every bottom-nav tab) use `ModuleHeader` (title, subtitle, the
+    screen's own buttons, pinned Ledger/Personal switch). It always shows **Settings** at the
+    top-right. Switching tabs must never change the header's size.
+  - **Every other screen** uses `PageHeader` (`src/components/ui/page-header.tsx`). Row 1 has
+    **Back** at the top-left and the screen's own buttons at the right. Row 2 is the title, so long
+    names and several buttons always fit. Filter chips go inside it as `children`. The
+    whole header is sticky, so Back never scrolls away. `header.sticky` re-points the theme tokens
+    so everything inside renders white on the bar.
+- Top-bar buttons (the parents must be able to find and read them):
+  - Always use `HeaderButton`, `BackButton` or `SettingsButton` (or `headerButtonClass()` for a
+    label element). Never use a ghost icon button, a text link or a hidden menu on the bar.
+  - Each button is 48px tall, has a 24px icon **and a word** ("Back", "Settings", "Edit", "Add",
+    "Print", "Share"), and is white with a visible outline. Delete uses `danger`: solid white with
+    red text.
+  - Words stay short so every button fits at 360px. Use "Add", not "Add new customer".
+  - Back is always top-left and labelled "Back" (‹ chevron). It goes to `backHref` when the
+    screen has a fixed parent, otherwise one page back, or home when there is no history.
+  - Settings is always the last button at the top-right of the main screens and nowhere else.
+    Logout lives inside Settings, not in a menu.
 
 ### Bottom of every screen
 - The phone's navigation-bar colour is read only from `#app-bottom-nav`. A page's own fixed
@@ -167,7 +181,8 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
 
 - **Production currently contains test code** (`zzuser`, `zzmock`: login bypass) from a manual
   deploy made while a test harness was applied. Redeploy production from a clean folder.
-- Not yet proven on a real phone: the APK 1.5 scanner, the number pad, the photo viewer.
+- Not yet proven on a real phone: the number pad, the photo viewer, the new top-bar buttons. The APK
+  1.5 scanner was confirmed working on the owner's phone on 12 Nov 2026.
 - The `barcodes` block in `firestore.rules` must be published by hand.
 - Dark mode on Ledger: Ledger home was measured dark with a realistic sign-in. An earlier "Ledger
   stays light" result came from a test that faked the user too early. The other Ledger screens

@@ -11,12 +11,12 @@ before relying on this spec.
 ## Screens (when on)
 | Route | What it does |
 |---|---|
-| `/kirayabook/rentals` | Rental list (tab when the flag is on). |
+| `/kirayabook/rentals` | Rental list (tab when the flag is on); `ModuleHeader` with "Add" and Settings. |
 | `/kirayabook/new-rental` | `RentalForm`: customer, items with quantity and rate, from and to dates (return date optional), advance. |
 | `/kirayabook/edit-rental` | Edit a rental. |
 | `/kirayabook/complete-rental/[id]` | Return and settle: amount paid today, balance or refund. |
-| `/kirayabook/unsettled` | Rentals with money still owed either way. |
-| `/kirayabook/bill/[id]` | Printable A5 bill and WhatsApp share. |
+| `/kirayabook/unsettled` | Rentals with money still owed either way. The filter chips sit inside its `PageHeader`. |
+| `/kirayabook/bill/[id]` | Printable A5 bill. Top bar has "Print" and "Share" (WhatsApp as a picture). |
 
 ## Money rules (`src/lib/rental-calculations.ts`)
 - Items total = Σ quantity × rate.

@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getCustomerById, getRentalsByCustomerId, deleteCustomer, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { ArrowLeft, Clock3, DollarSign, CheckCircle, AlertTriangle, Trash2, Loader2, CheckCircle2, Pencil, Expand } from 'lucide-react';
+import { Clock3, DollarSign, CheckCircle, AlertTriangle, Trash2, Loader2, CheckCircle2, Pencil, Expand } from 'lucide-react';
 import { formatMobile, isVerificationStale } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ import { BrandLoader, DataLoader } from '@/components/app/brand-loader';
 import { IdCardViewer } from '@/components/app/id-card-viewer';
 import { PhotoViewer } from '@/components/app/photo-viewer';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
+import { HeaderButton, PageHeader } from '@/components/ui/page-header';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -104,22 +105,15 @@ export default function CustomerDetailPage() {
 
   return (
     <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
-      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-lg font-bold ml-4">{customer.name}</h1>
-        <button
-          type="button"
-          onClick={() => router.push(`/kirayabook/edit-customer/${customerId}`)}
-          className="ml-auto flex h-11 items-center gap-1.5 rounded-xl bg-white/15 px-4 text-base font-semibold text-white hover:bg-white/25 active:scale-95"
-        >
-          <Pencil className="h-4 w-4" /> Edit
-        </button>
-        <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(true)} aria-label="Delete customer" className="text-destructive hover:bg-destructive/10">
-          <Trash2 className="w-5 h-5" />
-        </Button>
-      </header>
+      <PageHeader
+        title={customer.name}
+        actions={
+          <>
+            <HeaderButton icon={Pencil} label="Edit" href={`/kirayabook/edit-customer/${customerId}`} />
+            <HeaderButton icon={Trash2} label="Delete" danger onClick={() => setConfirmDelete(true)} />
+          </>
+        }
+      />
 
       {showPhoto && customer.photoUrl && <PhotoViewer url={customer.photoUrl} label={customer.name} onClose={() => setShowPhoto(false)} />}
 

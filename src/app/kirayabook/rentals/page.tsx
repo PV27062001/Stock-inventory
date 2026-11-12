@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BrandLoader, DataLoader } from '@/components/app/brand-loader';
+import { ModuleHeader } from '@/components/ui/module-header';
+import { HeaderButton } from '@/components/ui/page-header';
 
 const formatRentalDate = (date: Date | undefined) => {
   if (!date) return 'N/A';
@@ -114,14 +116,12 @@ function RentalsContent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="bg-card sticky top-0 z-10 border-b border-border flex items-center justify-between px-4 py-4">
-        <h1 className="text-xl font-bold">All Rentals</h1>
-        <Link href="/kirayabook/new-rental">
-          <Button className="bg-primary hover:bg-teal-700 text-primary-foreground rounded-full">
-            <Plus className="w-4 h-4 mr-1" /> Add rental
-          </Button>
-        </Link>
-      </header>
+      {/* A bottom-nav tab, so the same header as the other tabs. */}
+      <ModuleHeader
+        title="Rentals"
+        subtitle="Ledger"
+        right={<HeaderButton icon={Plus} label="Add" href="/kirayabook/new-rental" />}
+      />
 
       <main className="max-w-md mx-auto px-4 py-4 pb-24">
         <div className="relative mb-6 flex gap-2">

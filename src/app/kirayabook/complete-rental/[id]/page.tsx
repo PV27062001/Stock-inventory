@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, ChevronDown, ArrowLeft, Share2, Printer, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { CalendarIcon, ChevronDown, Share2, Printer, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { calcSettlement, clampNonNegative, isRentalClosed } from '@/lib/rental-calculations';
 import { BrandLoader } from '@/components/app/brand-loader';
 import { LoadingOverlay } from '@/components/app/loading-overlay';
 import { SuccessOverlay } from '@/components/app/success-overlay';
 import { shareBillOnWhatsApp } from '@/lib/bill';
+import { PageHeader } from '@/components/ui/page-header';
 
 function CompleteRentalByIdPageContent() {
   const router = useRouter();
@@ -151,12 +152,7 @@ function CompleteRentalByIdPageContent() {
           if (redirect) router.push(redirect);
         }}
       />
-      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-lg font-bold ml-4">Complete Rental</h1>
-      </header>
+      <PageHeader title="Complete Rental" />
 
       <main className="p-4 pb-60">
         <div className="space-y-6">
