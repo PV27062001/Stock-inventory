@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Settings, type LucideIcon } from 'lucide-react';
+import { ChevronLeft, LayoutGrid, Settings, type LucideIcon } from 'lucide-react';
 
 /**
  * The one style for every button on the coloured top bar (SPEC §5 "Top-bar buttons"): 48px tall,
@@ -58,20 +58,29 @@ export function BackButton({ href }: { href?: string }) {
   return <HeaderButton icon={ChevronLeft} label="Back" onClick={goBack} />;
 }
 
-/** Always top-right on the main screens (home and every bottom-nav tab). */
+/** Top-left on every app's main screens (its home and bottom-nav tabs): back to the app launcher. */
+export function AppsButton() {
+  return <HeaderButton icon={LayoutGrid} label="Apps" href="/apps" />;
+}
+
+/** Always top-right on the main screens (the launcher, each app's home and every bottom-nav tab). */
 export function SettingsButton() {
   return <HeaderButton icon={Settings} label="Settings" href="/settings" />;
 }
 
 /**
- * Header for every screen that is not a bottom-nav tab: Back on the left, the screen's own buttons
- * on the right, and the title on its own line underneath so long names and several buttons always
- * fit at phone width. `children` (such as filter chips) stay pinned inside the bar.
+ * The one top bar for every screen (SPEC §5 Navigation). Row 1: the way out on the left (`nav`:
+ * Back on inner screens, Apps on an app's main screens, nothing on the launcher), the screen's own
+ * buttons on the right and, with `settings`, Settings last. Row 2: the title on its own line so long
+ * names and several buttons always fit at phone width. `children` (such as filter chips) stay
+ * pinned inside the bar.
  */
 export function PageHeader({
   title,
   subtitle,
   backHref,
+  nav = 'back',
+  settings = false,
   actions,
   className = '',
   children,
@@ -79,6 +88,8 @@ export function PageHeader({
   title: string;
   subtitle?: string;
   backHref?: string;
+  nav?: 'back' | 'apps' | 'none';
+  settings?: boolean;
   actions?: React.ReactNode;
   className?: string;
   children?: React.ReactNode;
@@ -87,8 +98,14 @@ export function PageHeader({
     <header className={`sticky top-0 z-20 bg-[hsl(var(--app-bar))] px-4 pb-3 pt-2 text-white shadow-elevated ${className}`}>
       <div className="mx-auto max-w-md">
         <div className="flex min-h-12 items-center gap-2">
-          <BackButton href={backHref} />
-          {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+          {nav === 'back' && <BackButton href={backHref} />}
+          {nav === 'apps' && <AppsButton />}
+          {(actions || settings) && (
+            <div className="ml-auto flex items-center gap-2">
+              {actions}
+              {settings && <SettingsButton />}
+            </div>
+          )}
         </div>
         <div className="mt-2 min-w-0">
           {subtitle && <p className="text-sm font-semibold text-white/80">{subtitle}</p>}

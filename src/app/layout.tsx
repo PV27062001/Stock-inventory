@@ -12,6 +12,7 @@ import { InstallBanner } from '@/components/install-banner';
 import { NotificationWatcher } from '@/components/app/notification-watcher';
 import { AppUpdateBanner } from '@/components/app/app-update-banner';
 import { SystemBarsSync } from '@/components/app/system-bars-sync';
+import { moduleScript } from '@/modules/module-paths';
 
 export const metadata: Metadata = {
   title: 'Sri Amman - Inventory & Ledger',
@@ -51,7 +52,9 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var r=document.documentElement;if(location.pathname.indexOf('/kirayabook')===0){r.dataset.module='ledger';}try{if(localStorage.getItem('simplestock_theme')==='dark'){r.classList.add('dark');}}catch(e){}})();",
+              '(function(){var r=document.documentElement;' +
+              moduleScript() +
+              "try{if(localStorage.getItem('simplestock_theme')==='dark'){r.classList.add('dark');}}catch(e){}})();",
           }}
         />
       </head>

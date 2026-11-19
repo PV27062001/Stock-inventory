@@ -3,9 +3,10 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { isNativeApp, setNativeSystemBars } from '@/lib/native';
+import { moduleIdForPath } from '@/modules/module-paths';
 
 /**
- * Sets the module colour (green = Ledger, blue = everything else) and hands it to the system bars.
+ * Sets the module colour (`data-module` from the app registry; blue when outside any app) and hands it to the system bars.
  * Like Amazon, every screen has a dark brand bar at the top, so the phone's status icons are white
  * everywhere and never have to switch. The colour comes from --app-bar in globals.css, not from
  * what happens to be on screen, so it cannot be wrong while a page is loading or scrolling.
@@ -33,7 +34,8 @@ export function SystemBarsSync() {
 
   // Before paint, so a new screen never shows a frame of the other module's colour.
   useLayoutEffect(() => {
-    if (pathname?.startsWith('/kirayabook')) document.documentElement.dataset.module = 'ledger';
+    const id = moduleIdForPath(pathname);
+    if (id) document.documentElement.dataset.module = id;
     else delete document.documentElement.dataset.module;
   }, [pathname]);
 

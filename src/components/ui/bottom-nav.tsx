@@ -1,25 +1,18 @@
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Warehouse, Users, BookCheck } from 'lucide-react';
-import { RENTALS_ENABLED } from '@/lib/features';
+import { moduleIdForPath } from '@/modules/module-paths';
+import { getModule } from '@/modules/registry';
 
+/** The current app's tabs from the registry (SPEC §5 Navigation). Apps without tabs have no bottom nav. */
 export function BottomNav() {
   const pathname = usePathname();
+  const navItems = getModule(moduleIdForPath(pathname))?.tabs;
 
-  // Only show bottom nav for kirayabook pages
-  if (!pathname || !pathname.startsWith('/kirayabook')) {
+  if (!pathname || !navItems?.length) {
     return null;
   }
-
-  const navItems = [
-    { href: '/kirayabook', icon: BookOpen, label: 'Ledger' },
-    { href: '/kirayabook/customers', icon: Users, label: 'Customers' },
-    ...(RENTALS_ENABLED ? [{ href: '/kirayabook/rentals', icon: BookCheck, label: 'Rentals' }] : []),
-    { href: '/kirayabook/inventory', icon: Warehouse, label: 'Inventory' },
-  ];
 
   return (
     <nav id="app-bottom-nav" className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 bg-card border-t border-t-border shadow-[0_-2px_10px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">

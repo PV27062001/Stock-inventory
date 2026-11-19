@@ -31,7 +31,8 @@ their photo and ID documents.
   `deleteCustomer`; `CustomerTooLargeError` when photos exceed the document limit).
 
 ## Rules
-- The tabs (home, Customers) use `ModuleHeader` with Settings at the top-right; Customers adds an
+- The tabs (home, Customers) use `ModuleHeader` with Apps at the top-left and Settings at the
+  top-right (no Ledger/Personal switch); Customers adds an
   "Add" button. The detail and form screens use `PageHeader` (Back top-left). The customer
   screen's actions are "Edit" and a red "Delete" (SPEC §5).
 - The A–Z index is a page-level fixed `nav`. It must never decide the system bar colour.

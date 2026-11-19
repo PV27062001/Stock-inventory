@@ -25,7 +25,7 @@ export default function AlertsPage() {
   const handleAlertClick = (alert: Alert) => {
     // Navigate to the main inventory page for now.
     // In the future, this could navigate to the specific item's detail page.
-    router.push('/');
+    router.push('/inventory');
   };
 
   return (

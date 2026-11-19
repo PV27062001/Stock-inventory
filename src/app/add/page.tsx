@@ -54,7 +54,7 @@ function AddItemPage() {
 
       const inventoryRef = collection(db, 'users', user.uid, 'inventory');
       await addDoc(inventoryRef, itemData);
-      router.push('/');
+      router.push('/inventory');
     } catch (err) {
       logger.error("Save failed", err);
     } finally {

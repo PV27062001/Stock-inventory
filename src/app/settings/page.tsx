@@ -2,14 +2,14 @@
 
 import { logger } from '@/lib/logger';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Globe, Moon, User, LogOut, ChevronRight, Languages, Users, Plus, Mail, Bell, Home } from 'lucide-react';
+import { Globe, Moon, User, LogOut, ChevronRight, Languages, Users, Plus, Mail, Bell, Home, Check, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useUser } from '@/firebase';
@@ -17,7 +17,8 @@ import { signOut } from '@/firebase/auth/auth-service';
 import { withAuth } from '@/components/Auth/with-auth';
 import { useDarkMode } from '@/hooks/use-dark-mode';
 import { useNotifications } from '@/hooks/use-notifications';
-import { useStartPage } from '@/hooks/use-start-page';
+import { useStartPage, type StartPage } from '@/hooks/use-start-page';
+import { MODULES } from '@/modules/registry';
 import { PageHeader } from '@/components/ui/page-header';
 
 function SettingsPage() {
@@ -26,6 +27,13 @@ function SettingsPage() {
   const { isDark, setDark } = useDarkMode();
   const { permission, requestPermission, enabled, setEnabled } = useNotifications();
   const { startPage, setStartPage } = useStartPage();
+
+  // The launcher's "Opens first … Change" links here; the page renders after sign-in, so scroll then.
+  useEffect(() => {
+    if (window.location.hash === '#start-screen') {
+      document.getElementById('start-screen')?.scrollIntoView({ block: 'start' });
+    }
+  }, []);
 
   
   const [email, setEmail] = useState('');
@@ -156,7 +164,7 @@ function SettingsPage() {
 
       {/* App Options */}
       <section className="space-y-4 mb-10">
-        <Card className="p-4 border-none shadow-sm bg-card">
+        <Card id="start-screen" className="scroll-mt-40 p-4 border-none shadow-sm bg-card">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
               <Home className="w-5 h-5" />
@@ -166,25 +174,38 @@ function SettingsPage() {
               <p className="text-sm text-muted-foreground">Which screen opens first</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              { id: 'ask', label: 'Ask' },
-              { id: 'kirayabook', label: 'Ledger' },
-              { id: 'inventory', label: 'Personal' },
-            ] as const).map((opt) => (
-              <button
-                key={opt.id}
-                onClick={() => setStartPage(opt.id)}
-                className={cn(
-                  'h-12 rounded-xl text-base font-semibold transition-all',
-                  startPage === opt.id
-                    ? 'bg-primary text-primary-foreground shadow'
-                    : 'bg-secondary text-muted-foreground'
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2" role="radiogroup" aria-label="Start screen">
+            {[
+              { id: 'apps' as StartPage, label: 'Apps screen', note: 'All apps as icons', icon: LayoutGrid, colorVar: '--primary' },
+              ...MODULES.map((m) => ({ id: m.id as StartPage, label: m.name, note: m.description, icon: m.icon, colorVar: m.colorVar })),
+            ].map((opt) => {
+              const selected = startPage === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setStartPage(opt.id)}
+                  className={cn(
+                    'flex min-h-14 w-full items-center gap-3 rounded-xl border-2 px-3 py-2 text-left transition-all',
+                    selected ? 'border-primary bg-primary/10' : 'border-border bg-secondary'
+                  )}
+                >
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
+                    style={{ backgroundColor: `hsl(var(${opt.colorVar}))` }}
+                  >
+                    <opt.icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-bold">{opt.label}</span>
+                    <span className="block truncate text-sm text-muted-foreground">{opt.note}</span>
+                  </span>
+                  {selected && <Check className="h-6 w-6 shrink-0 text-primary" aria-hidden />}
+                </button>
+              );
+            })}
           </div>
         </Card>
 

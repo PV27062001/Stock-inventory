@@ -15,7 +15,7 @@ Paste this, with the module filled in:
 
 | Module spec | Covers |
 |---|---|
-| [01-app-shell](specs/01-app-shell.md) | Layout, sign-in, home chooser, settings, theme, language, system bars, bottom nav, banners, notifications |
+| [01-app-shell](specs/01-app-shell.md) | Layout, sign-in, Apps launcher, module registry, start screen, settings, theme, language, system bars, bottom nav, banners, notifications |
 | [02-personal-stock](specs/02-personal-stock.md) | Personal home stock: list, add/edit groceries and medicines, alerts, reminders, receipt scan |
 | [03-scanner-and-lookup](specs/03-scanner-and-lookup.md) | Barcode scanning (native and web), product name lookup, family barcode list, medicine names |
 | [04-rates-and-news](specs/04-rates-and-news.md) | Gold and silver rates, power shutdown news |
@@ -27,12 +27,17 @@ Paste this, with the module filled in:
 ## 2. Product
 
 A family app for a small Tamil Nadu shop (Sri Amman), used mostly by the owner's parents on Android
-phones. Two modules share one app:
+phones. It is a set of **apps (modules) in one launcher**: the Apps screen (`/apps`) shows each one
+as a big icon, Play Store style, and the user picks which one opens first. Today there are two:
 
 - **Personal** (blue): the family's home stock of groceries and medicines, with alerts, plus gold
   and silver rates and power shutdown news.
 - **Ledger** (green, routes under `/kirayabook`): the shop's customer book and rentable items.
   Rentals and bills exist behind a flag that is currently off.
+
+More apps (Diet next, then Medicines, Milk, Bills & income) are added one at a time through the
+module registry (§5 Navigation). Multi-family accounts are a proposal only
+([PLATFORM-ARCHITECTURE.md](PLATFORM-ARCHITECTURE.md)), not built.
 
 **The main users can type numbers but not letters.** Prefer the number pad, scanning and tapping;
 text entry is the fallback. English and Tamil are both supported.
@@ -84,24 +89,44 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 ### Colour and theme
 - Use only theme tokens from `globals.css` (`background`, `card`, `foreground`, `primary`, `muted`,
   `border`, `destructive`, `brand-green`, `brand-amber`). No raw hex colours in new code.
-- `--app-bar` is the module colour (blue Personal, green Ledger, from `data-module`). It stays dark
+- Each app has a colour token `--module-<id>`; `--app-bar` is the current app's colour (blue
+  Personal, green Ledger, from `data-module`; blue on the launcher and Settings). It stays dark
   enough for white status-bar icons in both themes.
 - Dark mode must work on every screen. Check new work in light and dark.
+
+### Navigation (three levels, the same in every app)
+1. **Apps launcher** `/apps`: every app as an icon tile (64px icon, English and Tamil name, the
+   whole tile at least 96px, never cut-off text), a star on the app that opens first, and an
+   "Opens first: … Change" row that goes to Settings → Start screen. Top bar: Settings only.
+2. **App main screens** (an app's home and each of its bottom-nav tabs): `ModuleHeader`, with
+   **Apps** at the top-left (back to the launcher) and **Settings** last at the top-right.
+3. **Inner screens** (forms, details, Settings): `PageHeader` with **Back** at the top-left.
+
+- `/` is only an entry point: it opens the start app chosen in Settings, else the launcher.
+- **Never hard-code a module list.** `src/modules/registry.ts` (name, Tamil name, icon, colour,
+  home, bottom tabs) and `src/modules/module-paths.ts` (which routes belong to which app) feed the
+  launcher, Settings, the bottom nav, the start page and the module colour. Adding an app is one
+  registry entry, its route prefixes, and a `--module-<id>` colour plus a `data-module` rule in
+  `globals.css`.
+- Only real apps get a tile; there are no "coming soon" tiles.
+- The Android back key is browser history back; it exits the app from the first screen.
 
 ### Top of every screen
 - Every screen has a solid `--app-bar` top bar joined to the status bar. The status icons are
   always white and never flip. Never add a white top bar or sample on-screen colours.
 - Only two headers exist, both in shared components. Never hand-write a `<header>` on a page.
-  - **Main screens** (home `/` and every bottom-nav tab) use `ModuleHeader` (title, subtitle, the
-    screen's own buttons, pinned Ledger/Personal switch). It always shows **Settings** at the
-    top-right. Switching tabs must never change the header's size.
+  - **App main screens** (each app's home and every bottom-nav tab) use `ModuleHeader`, a thin
+    wrapper of `PageHeader` with Apps at the top-left and **Settings** at the top-right. Switching
+    tabs must never change the header's size. There is no Ledger/Personal switch any more;
+    switching apps goes through Apps.
+  - **The launcher** uses `PageHeader nav="none" settings`.
   - **Every other screen** uses `PageHeader` (`src/components/ui/page-header.tsx`). Row 1 has
     **Back** at the top-left and the screen's own buttons at the right. Row 2 is the title, so long
     names and several buttons always fit. Filter chips go inside it as `children`. The
     whole header is sticky, so Back never scrolls away. `header.sticky` re-points the theme tokens
     so everything inside renders white on the bar.
 - Top-bar buttons (the parents must be able to find and read them):
-  - Always use `HeaderButton`, `BackButton` or `SettingsButton` (or `headerButtonClass()` for a
+  - Always use `HeaderButton`, `BackButton`, `AppsButton` or `SettingsButton` (or `headerButtonClass()` for a
     label element). Never use a ghost icon button, a text link or a hidden menu on the bar.
   - Each button is 48px tall, has a 24px icon **and a word** ("Back", "Settings", "Edit", "Add",
     "Print", "Share"), and is white with a visible outline. Delete uses `danger`: solid white with
@@ -109,7 +134,9 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
   - Words stay short so every button fits at 360px. Use "Add", not "Add new customer".
   - Back is always top-left and labelled "Back" (‹ chevron). It goes to `backHref` when the
     screen has a fixed parent, otherwise one page back, or home when there is no history.
-  - Settings is always the last button at the top-right of the main screens and nowhere else.
+  - Apps (grid icon) is top-left on the app main screens only, where there is no Back.
+  - Settings is always the last button at the top-right of the launcher and the app main screens,
+    and nowhere else.
     Logout lives inside Settings, not in a menu.
 
 ### Bottom of every screen
@@ -177,11 +204,12 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
    `npm run build` must pass.
 6. Report what was proven and what was not. A simulated test is not a real phone.
 
-## 10. Open items (12 Nov 2026)
+## 10. Open items (19 Nov 2026)
 
 - **Production currently contains test code** (`zzuser`, `zzmock`: login bypass) from a manual
   deploy made while a test harness was applied. Redeploy production from a clean folder.
-- Not yet proven on a real phone: the number pad, the photo viewer, the new top-bar buttons. The APK
+- Not yet proven on a real phone: the number pad, the photo viewer, the top-bar buttons, the Apps
+  launcher, the start screen choice and the back key from the launcher. The APK
   1.5 scanner was confirmed working on the owner's phone on 12 Nov 2026.
 - The `barcodes` block in `firestore.rules` must be published by hand.
 - Dark mode on Ledger: Ledger home was measured dark with a realistic sign-in. An earlier "Ledger

@@ -7,7 +7,8 @@ The shop's rentable items (vessels, cooking equipment) with a price per day, use
 rentals.
 
 ## Screen
-- `/kirayabook/inventory` (a bottom-nav tab) uses `ModuleHeader` ("Inventory", "Ledger"). Loading
+- `/kirayabook/inventory` (a bottom-nav tab) uses `ModuleHeader` ("Inventory", "Ledger"; Apps
+  top-left, Settings top-right). Loading
   shows inside the page under the header.
 - An add/edit form at the top (photo, name, price per day), then a grid of item cards with Edit and
   Delete.

@@ -10,7 +10,7 @@ expires, and medicine reminders.
 ## Screens
 | Route | What it does |
 |---|---|
-| `/inventory` | Personal home, with three sections: rates, shutdown news, inventory (`#inventory` opens the list directly). |
+| `/inventory` | Personal home (`ModuleHeader`: Apps top-left, Settings top-right), with three sections: rates, shutdown news, inventory (`#inventory` opens the list directly). Personal has no bottom nav. |
 | `/add-item` | Add or edit an item. `?id=` edits an existing one. |
 | `/add` | Receipt scan: photo of a bill, read by AI (Genkit + Gemini 2.5 Flash), items added from it. |
 | `/alerts` | Low-stock and today's medicine-reminder alerts. |
@@ -36,6 +36,9 @@ expires, and medicine reminders.
 
 ## Rules
 - Follow SPEC §5. Number fields use the number pad.
+- Routes `/inventory`, `/add-item`, `/add` and `/alerts` belong to Personal in
+  `src/modules/module-paths.ts`. After saving on `/add` or tapping an alert, go to `/inventory`,
+  not `/` (which now opens the start app).
 - A save that fails says so and keeps the form filled.
 
 ## Verify

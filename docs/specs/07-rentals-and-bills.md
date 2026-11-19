@@ -11,7 +11,7 @@ before relying on this spec.
 ## Screens (when on)
 | Route | What it does |
 |---|---|
-| `/kirayabook/rentals` | Rental list (tab when the flag is on); `ModuleHeader` with "Add" and Settings. |
+| `/kirayabook/rentals` | Rental list (tab when the flag is on); `ModuleHeader` with Apps, "Add" and Settings. The tab comes from the Ledger entry in `src/modules/registry.ts`. |
 | `/kirayabook/new-rental` | `RentalForm`: customer, items with quantity and rate, from and to dates (return date optional), advance. |
 | `/kirayabook/edit-rental` | Edit a rental. |
 | `/kirayabook/complete-rental/[id]` | Return and settle: amount paid today, balance or refund. |

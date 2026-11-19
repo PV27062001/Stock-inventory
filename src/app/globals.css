@@ -30,11 +30,15 @@
     --chart-3: 41 100% 49%;         /* amber */
     --chart-4: 28 95% 53%;          /* orange */
     --chart-5: 280 68% 60%;         /* purple */
-    /* Top app bar + status bar. Must stay dark enough for white status icons, in both themes. */
-    --app-bar: 214 82% 51%;         /* blue = Personal */
+    /* One colour per app (src/modules/registry.ts `colorVar`); the launcher tiles use them. */
+    --module-personal: 214 82% 51%; /* blue */
+    --module-ledger: 137 65% 34%;   /* green */
+    /* Top app bar + status bar. Must stay dark enough for white status icons, in both themes.
+       Blue (Personal) is also the bar of the Apps launcher and Settings. */
+    --app-bar: var(--module-personal);
   }
   :root[data-module='ledger'] {
-    --app-bar: 137 65% 34%;         /* green = Ledger */
+    --app-bar: var(--module-ledger);
   }
   .dark {
     --background: 222 18% 11%;
