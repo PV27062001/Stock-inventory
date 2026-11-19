@@ -37,9 +37,11 @@ export const dayLabel = (day: string) => {
   return new Date(y, m - 1, d).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
 };
 
-/** "₹1,425" or "₹1,425.50" */
-export const rupees = (amount: number) =>
-  '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+/** "₹1,425" or "₹1,425.50" (paise always as two digits) */
+export const rupees = (amount: number) => {
+  const whole = Math.round(amount * 100) % 100 === 0;
+  return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
+};
 
 /** "9:00 am" from "09:00" */
 export const timeLabel = (hhmm: string) => {

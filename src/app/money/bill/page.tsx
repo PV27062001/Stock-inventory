@@ -6,7 +6,7 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { HeaderButton, PageHeader } from '@/components/ui/page-header';
 import { withAuth } from '@/components/Auth/with-auth';
 import { BrandLoader } from '@/components/app/brand-loader';
-import { ErrorNote, LoadingNote, fieldClass } from '@/components/apps/shared';
+import { ErrorNote, LoadingNote, chip, fieldClass, pill } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { deleteBill, getBill, saveBill } from '@/firebase/apps/household';
 import { logger } from '@/lib/logger';
@@ -75,8 +75,6 @@ function BillFormContent() {
     }
   };
 
-  const chip = (active: boolean) =>
-    `h-12 rounded-xl px-4 text-base font-semibold ring-1 ${active ? 'bg-primary text-primary-foreground ring-primary' : 'bg-secondary ring-border'}`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -89,7 +87,7 @@ function BillFormContent() {
       {loading ? (
         <LoadingNote />
       ) : (
-        <form onSubmit={save} className="mx-auto max-w-md space-y-5 p-4">
+        <form onSubmit={save} className="mx-auto max-w-md space-y-6 p-4">
           {error && <ErrorNote message={error} />}
 
           <fieldset className="space-y-2">
@@ -121,7 +119,7 @@ function BillFormContent() {
           <button
             type="submit"
             disabled={!valid || saving}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-primary-foreground disabled:opacity-50"
+            className={`${pill('filled', 'lg')} w-full`}
           >
             {saving && <Loader2 className="h-5 w-5 animate-spin" aria-hidden />}
             Save

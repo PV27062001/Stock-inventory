@@ -121,6 +121,16 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 - Only real apps get a tile; there are no "coming soon" tiles.
 - The Android back key is browser history back; it exits the app from the first screen.
 
+### App look (Medicines, Milk, Money and every new app)
+- Built from `src/components/apps/shared.tsx` only: a coloured `Hero` card with the one number
+  that matters, `Section` titles, `ListGroup` rows in one rounded card with hairline dividers,
+  `IconBadge`, `StatTile`, `EmptyState`, pill buttons (`pill()`), choice chips (`chip()`), filled
+  fields (`fieldClass`), and `NumberDialog` for numbers.
+- Inside these apps `--primary` is the app's own colour (lighter in dark mode), so buttons and
+  selections match the top bar.
+- Rounded 24–28px surfaces, soft shadows, tabular figures for money and amounts. No bordered boxes
+  stacked one after another.
+
 ### Top of every screen
 - Every screen has a solid `--app-bar` top bar joined to the status bar. The status icons are
   always white and never flip. Never add a white top bar or sample on-screen colours.
@@ -236,5 +246,4 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
 - Dark mode on Ledger: Ledger home was measured dark with a realistic sign-in. An earlier "Ledger
   stays light" result came from a test that faked the user too early. The other Ledger screens
   still need measuring.
-- The medicine reminder switch is 24px tall (below the 44px rule).
 - `app-version.json` `latestBuild` is still 2; the current APK is build 6.

@@ -47,9 +47,10 @@ expires, and medicine reminders.
 ## Verify
 - Harness covers grocery and medicine, new and edit, More details, Save & scan next, existing item
   +1, every scanner result, and light/dark layout (last run: 34 of 36 checks passed; the 2 fails
-  are the 24px reminder switch).
+  are the 24px reminder switch, enlarged to 44px on 19 Nov 2026).
 
 ## Open
 - Receipt scan (`/add`) and the voice assistant (`src/ai/flows/voice-inventory-assistant.ts`,
   which still returns mock data) were not reviewed in this round.
-- Reminder switch below 44px.
+- The reminder switch is now 44px tall (the shared `Switch` was enlarged, which also affects
+  Settings and Receipt scan).

@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Check, ChevronRight, Pill, Plus } from 'lucide-react';
+import { AlertTriangle, Check, ChevronRight, Clock, Pill, Plus } from 'lucide-react';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { HeaderButton } from '@/components/ui/page-header';
 import { withAuth } from '@/components/Auth/with-auth';
-import { ErrorNote, LoadingNote, StatTile } from '@/components/apps/shared';
+import { EmptyState, ErrorNote, Hero, IconBadge, ListGroup, LoadingNote, Section } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { useInventory } from '@/firebase/firestore/use-inventory';
 import { getDosesForDay, markDoseTaken, unmarkDose, doseId, type MedicineDose } from '@/firebase/apps/household';
@@ -100,11 +100,14 @@ function MedicinesPage() {
     }
   };
 
-  const takenCount = slots.filter((s) => taken.has(doseId(today, s.item.id, s.slot))).length;
+  const isTaken = (s: Slot) => taken.has(doseId(today, s.item.id, s.slot));
+  const takenCount = slots.filter(isTaken).length;
+  const next = slots.find((s) => !isTaken(s));
   const refills = medicines.filter((m) => {
     const days = Math.floor((m.quantity ?? 0) / perDay(m));
     return days <= REFILL_DAYS || (m.lowStockThreshold != null && (m.quantity ?? 0) <= m.lowStockThreshold);
   });
+  const allDone = !dosesLoading && slots.length > 0 && takenCount === slots.length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -113,28 +116,40 @@ function MedicinesPage() {
       {itemsLoading ? (
         <LoadingNote label="Loading medicines…" />
       ) : medicines.length === 0 ? (
-        <main className="mx-auto max-w-md space-y-4 p-4 text-center">
-          <div className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary">
-            <Pill className="h-10 w-10 text-muted-foreground" aria-hidden />
-          </div>
-          <p className="text-lg font-semibold">No medicines yet</p>
-          <p className="text-base text-muted-foreground">Add each medicine once with how many pills you have and when to take them.</p>
-          <Link href="/medicines/add" className="mx-auto flex h-14 max-w-xs items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-primary-foreground">
-            <Plus className="h-6 w-6" aria-hidden /> Add medicine
-          </Link>
+        <main className="mx-auto max-w-md p-4">
+          <EmptyState
+            icon={Pill}
+            title="No medicines yet"
+            text="Add each medicine once with how many pills you have and when to take them."
+            action={{ label: 'Add medicine', href: '/medicines/add' }}
+          />
         </main>
       ) : (
-        <main className="mx-auto max-w-md space-y-5 p-4">
+        <main className="mx-auto max-w-md space-y-6 p-4">
           {error && <ErrorNote message={error} onRetry={loadDoses} />}
 
-          <div className="grid grid-cols-2 gap-3">
-            <StatTile label="Taken today" value={dosesLoading ? '…' : `${takenCount} of ${slots.length}`} tone={!dosesLoading && takenCount === slots.length ? 'good' : 'default'} />
-            <StatTile label="Need refill" value={String(refills.length)} tone={refills.length ? 'bad' : 'good'} />
-          </div>
+          <Hero
+            icon={Pill}
+            eyebrow={`Today · ${dayLabel(today)}`}
+            title={dosesLoading ? '…' : allDone ? 'All taken' : `${takenCount} of ${slots.length} taken`}
+            subtitle={dosesLoading ? undefined : allDone ? 'Well done. See you tomorrow.' : next ? `Next: ${next.item.name} · ${next.label}` : undefined}
+          >
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuemin={0} aria-valuemax={slots.length} aria-valuenow={takenCount}>
+              <div className="h-full rounded-full bg-white transition-all" style={{ width: `${slots.length ? (takenCount / slots.length) * 100 : 0}%` }} />
+            </div>
+          </Hero>
 
-          <section>
-            <h2 className="mb-2 text-lg font-bold">Today · {dayLabel(today)}</h2>
-            <ul className="space-y-2">
+          {refills.length > 0 && (
+            <div className="flex items-center gap-3 rounded-3xl bg-destructive/10 p-4 ring-1 ring-destructive/25">
+              <AlertTriangle className="h-6 w-6 shrink-0 text-destructive" aria-hidden />
+              <p className="text-base">
+                <b>{refills.length === 1 ? refills[0].name : `${refills.length} medicines`}</b> {refills.length === 1 ? 'is' : 'are'} running out. Buy more soon.
+              </p>
+            </div>
+          )}
+
+          <Section title="Today's doses">
+            <ListGroup>
               {slots.map((s) => {
                 const id = doseId(today, s.item.id, s.slot);
                 const done = taken.has(id);
@@ -145,50 +160,45 @@ function MedicinesPage() {
                       onClick={() => toggle(s)}
                       disabled={dosesLoading || busy === id}
                       aria-pressed={done}
-                      className={`flex min-h-16 w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all active:scale-[0.99] disabled:opacity-60 ${
-                        done ? 'border-brand-green bg-brand-green/10' : 'border-border bg-card'
-                      }`}
+                      className="flex min-h-[4.5rem] w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-secondary disabled:opacity-60"
                     >
-                      <span className="w-20 shrink-0 text-base font-bold text-muted-foreground">{s.label}</span>
-                      <span className="min-w-0 flex-1 truncate text-lg font-semibold">{s.item.name}</span>
+                      <IconBadge icon={done ? Check : Clock} tone={done ? 'good' : 'primary'} />
+                      <span className="min-w-0 flex-1">
+                        <span className={`block truncate text-lg font-semibold ${done ? 'text-muted-foreground line-through decoration-2' : ''}`}>{s.item.name}</span>
+                        <span className="block text-base text-muted-foreground">{s.label}</span>
+                      </span>
                       <span
-                        className={`flex h-12 shrink-0 items-center gap-1 rounded-xl px-3 text-base font-bold ${
-                          done ? 'bg-brand-green text-white' : 'bg-primary text-primary-foreground'
+                        className={`flex h-12 shrink-0 items-center gap-1 rounded-full px-5 text-base font-bold ${
+                          done ? 'bg-brand-green/15 text-brand-green' : 'bg-primary text-primary-foreground shadow-sm'
                         }`}
                       >
-                        {done ? (
-                          <>
-                            <Check className="h-5 w-5" aria-hidden /> Taken
-                          </>
-                        ) : (
-                          'Take'
-                        )}
+                        {done ? 'Taken' : 'Take'}
                       </span>
                     </button>
                   </li>
                 );
               })}
-            </ul>
-            <p className="mt-2 text-sm text-muted-foreground">Tap again to undo. Each dose counts one pill off.</p>
-          </section>
+            </ListGroup>
+            <p className="mt-2 px-1 text-sm text-muted-foreground">Tap again to undo. Each dose counts one pill off.</p>
+          </Section>
 
-          <section>
-            <h2 className="mb-2 text-lg font-bold">All medicines</h2>
-            <ul className="space-y-2">
+          <Section title="All medicines" action={{ label: 'Add', href: '/medicines/add' }}>
+            <ListGroup>
               {medicines.map((m) => {
                 const left = m.quantity ?? 0;
                 const days = Math.floor(left / perDay(m));
                 const low = refills.includes(m);
                 return (
                   <li key={m.id}>
-                    <Link href={`/medicines/add?id=${m.id}`} className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-soft">
+                    <Link href={`/medicines/add?id=${m.id}`} className="flex min-h-[4.5rem] items-center gap-3 px-4 py-3 active:bg-secondary">
+                      <IconBadge icon={Pill} tone={low ? 'bad' : 'primary'} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-lg font-semibold">{m.name}</span>
                         <span className="block text-base text-muted-foreground">
-                          {left} pills left · {perDay(m)} a day
+                          {left} pills · {perDay(m)} a day
                         </span>
                       </span>
-                      <span className={`shrink-0 rounded-xl px-3 py-1.5 text-base font-bold ${low ? 'bg-destructive/15 text-destructive' : 'bg-brand-green/15 text-brand-green'}`}>
+                      <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${low ? 'bg-destructive/10 text-destructive' : 'bg-brand-green/15 text-brand-green'}`}>
                         {low ? (days <= 0 ? 'Refill now' : `${days} days · refill`) : `${days} days`}
                       </span>
                       <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
@@ -196,8 +206,8 @@ function MedicinesPage() {
                   </li>
                 );
               })}
-            </ul>
-          </section>
+            </ListGroup>
+          </Section>
         </main>
       )}
     </div>

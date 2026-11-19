@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Minus, Plus, Trash2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Minus, Plus, Receipt, Trash2, Wallet } from 'lucide-react';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { withAuth } from '@/components/Auth/with-auth';
-import { ErrorNote, LoadingNote, MonthSwitcher, StatTile } from '@/components/apps/shared';
+import { ErrorNote, Hero, IconBadge, ListGroup, LoadingNote, MonthSwitcher, Section, StatTile } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import {
   deleteMoneyEntry,
@@ -16,7 +16,7 @@ import {
   type BillPayment,
   type MoneyEntry,
 } from '@/firebase/apps/household';
-import { dayLabel, monthKey, rupees } from '@/lib/dates';
+import { dayLabel, monthKey, monthLabel, rupees } from '@/lib/dates';
 import { logger } from '@/lib/logger';
 
 function MoneyPage() {
@@ -78,11 +78,13 @@ function MoneyPage() {
     }
   };
 
+  const heroButton = 'flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-white text-base font-bold shadow-sm active:scale-[0.98]';
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ModuleHeader title="Money" subtitle="வரவு செலவு" />
 
-      <main className="mx-auto max-w-md space-y-5 p-4">
+      <main className="mx-auto max-w-md space-y-6 p-4">
         <MonthSwitcher month={month} onChange={setMonth} />
         {error && <ErrorNote message={error} onRetry={load} />}
 
@@ -90,46 +92,55 @@ function MoneyPage() {
           <LoadingNote />
         ) : (
           <>
+            <Hero
+              icon={Wallet}
+              eyebrow={balance >= 0 ? `Left in ${monthLabel(month).split(' ')[0]}` : 'Spent more than came in'}
+              title={rupees(Math.abs(balance))}
+            >
+              <div className="flex gap-2">
+                <Link href={`/money/add?type=income&month=${month}`} className={`${heroButton} text-brand-green`}>
+                  <Plus className="h-5 w-5" aria-hidden /> Came in
+                </Link>
+                <Link href={`/money/add?type=expense&month=${month}`} className={`${heroButton} text-destructive`}>
+                  <Minus className="h-5 w-5" aria-hidden /> Spent
+                </Link>
+              </div>
+            </Hero>
+
             <div className="grid grid-cols-2 gap-3">
               <StatTile label="Came in" value={rupees(totals.income)} tone="good" />
               <StatTile label="Spent" value={rupees(totals.spent)} tone="bad" />
             </div>
-            <div className={`rounded-2xl border-2 p-4 ${balance >= 0 ? 'border-brand-green/40 bg-brand-green/10' : 'border-destructive/40 bg-destructive/10'}`}>
-              <p className="text-base font-semibold text-muted-foreground">{balance >= 0 ? 'Left this month' : 'Spent more than came in'}</p>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-brand-green' : 'text-destructive'}`}>{rupees(Math.abs(balance))}</p>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Link href={`/money/add?type=income&month=${month}`} className="flex h-16 items-center justify-center gap-2 rounded-xl bg-brand-green text-lg font-bold text-white">
-                <Plus className="h-6 w-6" aria-hidden /> Came in
-              </Link>
-              <Link href={`/money/add?type=expense&month=${month}`} className="flex h-16 items-center justify-center gap-2 rounded-xl bg-destructive text-lg font-bold text-white">
-                <Minus className="h-6 w-6" aria-hidden /> Spent
-              </Link>
-            </div>
+            <ListGroup>
+              <li>
+                <Link href="/money/bills" className="flex min-h-[4.5rem] items-center gap-3 px-4 py-3 active:bg-secondary">
+                  <IconBadge icon={Receipt} tone={bills.length && totals.unpaidCount ? 'bad' : 'primary'} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-lg font-semibold">Bills</span>
+                    <span className="block text-base text-muted-foreground">
+                      {bills.length === 0
+                        ? 'Add your monthly bills (EB, gas, rent…)'
+                        : totals.unpaidCount === 0
+                          ? `All ${bills.length} paid · ${rupees(totals.billsPaid)}`
+                          : `${totals.unpaidCount} to pay · ${rupees(totals.unpaidAmount)}`}
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+                </Link>
+              </li>
+            </ListGroup>
 
-            <Link href="/money/bills" className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-soft">
-              <span className="min-w-0 flex-1">
-                <span className="block text-lg font-semibold">Bills</span>
-                <span className="block text-base text-muted-foreground">
-                  {bills.length === 0
-                    ? 'Add your monthly bills (EB, gas, rent…)'
-                    : totals.unpaidCount === 0
-                      ? `All ${bills.length} paid · ${rupees(totals.billsPaid)}`
-                      : `${totals.unpaidCount} to pay · ${rupees(totals.unpaidAmount)}`}
-                </span>
-              </span>
-              <ChevronRight className="h-6 w-6 shrink-0 text-muted-foreground" aria-hidden />
-            </Link>
-
-            <section>
-              <h2 className="mb-2 text-lg font-bold">Entries</h2>
+            <Section title="Entries">
               {entries.length === 0 ? (
-                <p className="rounded-2xl bg-card p-4 text-base text-muted-foreground">Nothing entered this month. Use the buttons above.</p>
+                <p className="rounded-3xl bg-card p-5 text-base text-muted-foreground shadow-soft ring-1 ring-border/60">
+                  Nothing entered this month. Use Came in or Spent above.
+                </p>
               ) : (
-                <ul className="space-y-2">
+                <ListGroup>
                   {entries.map((e) => (
-                    <li key={e.id} className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-card p-3">
+                    <li key={e.id} className="flex min-h-[4.5rem] items-center gap-3 py-2 pl-4 pr-2">
+                      <IconBadge icon={e.type === 'income' ? ArrowDownLeft : ArrowUpRight} tone={e.type === 'income' ? 'good' : 'bad'} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-base font-semibold">{e.category}</span>
                         <span className="block truncate text-sm text-muted-foreground">
@@ -137,18 +148,23 @@ function MoneyPage() {
                           {e.note ? ` · ${e.note}` : ''}
                         </span>
                       </span>
-                      <span className={`shrink-0 text-lg font-bold ${e.type === 'income' ? 'text-brand-green' : 'text-destructive'}`}>
+                      <span className={`shrink-0 text-lg font-bold tabular-nums ${e.type === 'income' ? 'text-brand-green' : 'text-foreground'}`}>
                         {e.type === 'income' ? '+' : '−'}
                         {rupees(e.amount)}
                       </span>
-                      <button type="button" onClick={() => remove(e)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground ring-1 ring-border" aria-label={`Delete ${e.category}`}>
+                      <button
+                        type="button"
+                        onClick={() => remove(e)}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors active:bg-secondary"
+                        aria-label={`Delete ${e.category}`}
+                      >
                         <Trash2 className="h-5 w-5" aria-hidden />
                       </button>
                     </li>
                   ))}
-                </ul>
+                </ListGroup>
               )}
-            </section>
+            </Section>
           </>
         )}
       </main>

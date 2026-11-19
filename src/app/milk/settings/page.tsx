@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { withAuth } from '@/components/Auth/with-auth';
-import { ErrorNote, LoadingNote, fieldClass } from '@/components/apps/shared';
+import { ErrorNote, LoadingNote, chip, fieldClass, pill } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { getMilkSettings, saveMilkSettings } from '@/firebase/apps/household';
 import { logger } from '@/lib/logger';
 
-const LITRE_CHIPS = [0.5, 1, 1.5, 2];
+const LITRE_CHIPS = [0.25, 0.5, 0.75, 1, 1.5, 2];
 
 function MilkSettingsPage() {
   const router = useRouter();
@@ -70,7 +70,7 @@ function MilkSettingsPage() {
       {loading ? (
         <LoadingNote />
       ) : (
-        <form onSubmit={save} className="mx-auto max-w-md space-y-5 p-4">
+        <form onSubmit={save} className="mx-auto max-w-md space-y-6 p-4">
           {error && <ErrorNote message={error} />}
 
           <label className="block space-y-2">
@@ -86,9 +86,7 @@ function MilkSettingsPage() {
                   key={l}
                   type="button"
                   onClick={() => setDefaultLitres(String(l))}
-                  className={`h-12 min-w-16 rounded-xl px-4 text-lg font-semibold ring-1 ${
-                    litresNum === l ? 'bg-primary text-primary-foreground ring-primary' : 'bg-secondary ring-border'
-                  }`}
+                  className={`${chip(litresNum === l)} min-w-16`}
                 >
                   {l} L
                 </button>
@@ -118,7 +116,7 @@ function MilkSettingsPage() {
           <button
             type="submit"
             disabled={!valid || saving}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-primary-foreground disabled:opacity-50"
+            className={`${pill('filled', 'lg')} w-full`}
           >
             {saving && <Loader2 className="h-5 w-5 animate-spin" aria-hidden />}
             Save

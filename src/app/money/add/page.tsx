@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { withAuth } from '@/components/Auth/with-auth';
 import { BrandLoader } from '@/components/app/brand-loader';
-import { ErrorNote, fieldClass } from '@/components/apps/shared';
+import { ErrorNote, chip, fieldClass, pill } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { addMoneyEntry, type MoneyType } from '@/firebase/apps/household';
 import { dayKey, monthKey } from '@/lib/dates';
@@ -61,16 +61,14 @@ function AddMoneyContent() {
     }
   };
 
-  const chip = (active: boolean) =>
-    `h-12 rounded-xl px-4 text-base font-semibold ring-1 ${active ? 'bg-primary text-primary-foreground ring-primary' : 'bg-secondary ring-border'}`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <PageHeader title={type === 'income' ? 'Money came in' : 'Money spent'} subtitle="Money" backHref="/money" />
-      <form onSubmit={save} className="mx-auto max-w-md space-y-5 p-4">
+      <form onSubmit={save} className="mx-auto max-w-md space-y-6 p-4">
         {error && <ErrorNote message={error} />}
 
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-secondary p-1.5">
+        <div className="grid grid-cols-2 gap-1 rounded-full bg-secondary p-1">
           {(['income', 'expense'] as const).map((t) => (
             <button
               key={t}
@@ -80,7 +78,7 @@ function AddMoneyContent() {
                 setType(t);
                 setCategory('');
               }}
-              className={`h-12 rounded-xl text-lg font-bold ${
+              className={`h-12 rounded-full text-lg font-bold transition-colors ${
                 type === t ? (t === 'income' ? 'bg-brand-green text-white' : 'bg-destructive text-white') : 'text-muted-foreground'
               }`}
             >
@@ -91,7 +89,7 @@ function AddMoneyContent() {
 
         <label className="block space-y-2">
           <span className="text-base font-semibold">Amount</span>
-          <div className="flex items-center gap-2 rounded-xl border-2 border-primary bg-card px-4">
+          <div className="flex items-center gap-2 rounded-2xl bg-secondary px-4 ring-2 ring-primary">
             <span className="text-2xl font-bold text-muted-foreground">₹</span>
             <input
               inputMode="decimal"
@@ -135,7 +133,7 @@ function AddMoneyContent() {
         <button
           type="submit"
           disabled={!valid || saving}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-primary-foreground disabled:opacity-50"
+          className={`${pill('filled', 'lg')} w-full`}
         >
           {saving && <Loader2 className="h-5 w-5 animate-spin" aria-hidden />}
           Save

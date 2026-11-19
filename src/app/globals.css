@@ -52,6 +52,14 @@
   :root[data-module='money'] {
     --app-bar: var(--module-money);
   }
+  /* Inside Medicines, Milk and Money, buttons and selections take the app's own colour (like
+     Material You), lighter in dark mode so they stay readable on the dark background. */
+  :root[data-module='medicines'] { --primary: var(--module-medicines); --ring: var(--module-medicines); }
+  :root[data-module='milk'] { --primary: var(--module-milk); --ring: var(--module-milk); }
+  :root[data-module='money'] { --primary: var(--module-money); --ring: var(--module-money); }
+  :root.dark[data-module='medicines'] { --primary: 345 75% 64%; --ring: 345 75% 64%; }
+  :root.dark[data-module='milk'] { --primary: 190 72% 48%; --ring: 190 72% 48%; }
+  :root.dark[data-module='money'] { --primary: 262 72% 72%; --ring: 262 72% 72%; }
   .dark {
     --background: 222 18% 11%;
     --foreground: 210 20% 98%;

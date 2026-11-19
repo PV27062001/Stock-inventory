@@ -6,10 +6,10 @@ import { Check, Plus, Receipt } from 'lucide-react';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { HeaderButton } from '@/components/ui/page-header';
 import { withAuth } from '@/components/Auth/with-auth';
-import { ErrorNote, LoadingNote, MonthSwitcher, NumberDialog, StatTile } from '@/components/apps/shared';
+import { EmptyState, ErrorNote, Hero, IconBadge, ListGroup, LoadingNote, MonthSwitcher, NumberDialog, Section } from '@/components/apps/shared';
 import { useAuthUser } from '@/firebase/auth/use-auth-user';
 import { getBillPayments, getBills, payBill, unpayBill, type Bill, type BillPayment } from '@/firebase/apps/household';
-import { dayKey, dayLabel, daysInMonth, monthKey, rupees } from '@/lib/dates';
+import { dayKey, dayLabel, daysInMonth, monthKey, monthLabel, rupees } from '@/lib/dates';
 import { logger } from '@/lib/logger';
 
 /** The bill's due date in a month, moved to the last day when the month is shorter. */
@@ -48,6 +48,7 @@ function BillsPage() {
 
   const paidBy = useMemo(() => new Map(payments.map((p) => [p.billId, p])), [payments]);
   const toPay = bills.filter((b) => !paidBy.has(b.id));
+  const toPayAmount = toPay.reduce((s, b) => s + b.amount, 0);
   const paidTotal = payments.reduce((s, p) => s + p.amount, 0);
 
   const pay = async (bill: Bill, amount: number) => {
@@ -79,56 +80,59 @@ function BillsPage() {
     <div className="min-h-screen bg-background text-foreground">
       <ModuleHeader title="Bills" subtitle="Money" right={<HeaderButton icon={Plus} label="Add" href="/money/bill" />} />
 
-      <main className="mx-auto max-w-md space-y-5 p-4">
+      <main className="mx-auto max-w-md space-y-6 p-4">
         <MonthSwitcher month={month} onChange={setMonth} />
         {error && <ErrorNote message={error} onRetry={load} />}
 
         {loading ? (
           <LoadingNote label="Loading bills…" />
         ) : bills.length === 0 ? (
-          <div className="space-y-4 text-center">
-            <div className="mx-auto mt-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary">
-              <Receipt className="h-10 w-10 text-muted-foreground" aria-hidden />
-            </div>
-            <p className="text-lg font-semibold">No bills yet</p>
-            <p className="text-base text-muted-foreground">Add each monthly bill once (EB, gas, rent, school fees). Every month you just tap Pay.</p>
-            <Link href="/money/bill" className="mx-auto flex h-14 max-w-xs items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-primary-foreground">
-              <Plus className="h-6 w-6" aria-hidden /> Add bill
-            </Link>
-          </div>
+          <EmptyState
+            icon={Receipt}
+            title="No bills yet"
+            text="Add each monthly bill once (EB, gas, rent, school fees). Every month you just tap Pay."
+            action={{ label: 'Add bill', href: '/money/bill' }}
+          />
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
-              <StatTile label="To pay" value={rupees(toPay.reduce((s, b) => s + b.amount, 0))} tone={toPay.length ? 'bad' : 'good'} />
-              <StatTile label="Paid" value={rupees(paidTotal)} tone="good" />
-            </div>
-            <ul className="space-y-2">
-              {bills.map((b) => {
-                const paid = paidBy.get(b.id);
-                const due = dueDate(b, month);
-                const late = !paid && due < today;
-                return (
-                  <li key={b.id} className={`flex min-h-16 items-center gap-3 rounded-2xl border-2 bg-card p-3 ${paid ? 'border-brand-green/50' : late ? 'border-destructive/60' : 'border-border'}`}>
-                    <Link href={`/money/bill?id=${b.id}`} className="min-w-0 flex-1">
-                      <span className="block truncate text-lg font-semibold">{b.name}</span>
-                      <span className={`block text-base ${late ? 'font-semibold text-destructive' : 'text-muted-foreground'}`}>
-                        {paid ? `Paid ${rupees(paid.amount)}` : `${late ? 'Was due' : 'Due'} ${dayLabel(due)} · ${rupees(b.amount)}`}
-                      </span>
-                    </Link>
-                    {paid ? (
-                      <button type="button" onClick={() => undo(b)} className="flex h-12 shrink-0 items-center gap-1 rounded-xl bg-brand-green px-3 text-base font-bold text-white">
-                        <Check className="h-5 w-5" aria-hidden /> Paid
-                      </button>
-                    ) : (
-                      <button type="button" onClick={() => setPaying(b)} className="h-12 shrink-0 rounded-xl bg-primary px-4 text-base font-bold text-primary-foreground">
-                        Pay
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="text-sm text-muted-foreground">Tap a bill's name to change it. Paid bills count in this month's Spent.</p>
+            <Hero
+              icon={Receipt}
+              eyebrow={`To pay in ${monthLabel(month).split(' ')[0]}`}
+              title={toPay.length ? rupees(toPayAmount) : 'All paid'}
+              subtitle={`${toPay.length} of ${bills.length} bills left · ${rupees(paidTotal)} paid`}
+            />
+
+            <Section title="This month">
+              <ListGroup>
+                {bills.map((b) => {
+                  const paid = paidBy.get(b.id);
+                  const due = dueDate(b, month);
+                  const late = !paid && due < today;
+                  return (
+                    <li key={b.id} className="flex min-h-[4.5rem] items-center gap-3 px-4 py-3">
+                      <IconBadge icon={paid ? Check : Receipt} tone={paid ? 'good' : late ? 'bad' : 'primary'} />
+                      <Link href={`/money/bill?id=${b.id}`} className="flex min-h-11 min-w-0 flex-1 flex-col justify-center">
+                        <span className="block truncate text-lg font-semibold">{b.name}</span>
+                        {/* Amount first and allowed to wrap, so it is never cut off. */}
+                        <span className={`block text-base ${late ? 'font-semibold text-destructive' : 'text-muted-foreground'}`}>
+                          {paid ? `Paid ${rupees(paid.amount)}` : `${rupees(b.amount)} · ${late ? 'was due' : 'due'} ${dayLabel(due)}`}
+                        </span>
+                      </Link>
+                      {paid ? (
+                        <button type="button" onClick={() => undo(b)} className="flex h-12 shrink-0 items-center gap-1 rounded-full bg-brand-green/15 px-4 text-base font-bold text-brand-green">
+                          <Check className="h-5 w-5" aria-hidden /> Paid
+                        </button>
+                      ) : (
+                        <button type="button" onClick={() => setPaying(b)} className="h-12 shrink-0 rounded-full bg-primary px-5 text-base font-bold text-primary-foreground shadow-sm">
+                          Pay
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ListGroup>
+              <p className="mt-2 px-1 text-sm text-muted-foreground">Tap a bill's name to change it. Paid bills count in this month's Spent.</p>
+            </Section>
           </>
         )}
       </main>
