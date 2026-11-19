@@ -2,6 +2,7 @@ package in.sriamman.app;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.view.Gravity;
@@ -37,6 +38,14 @@ public class SystemBarsPlugin extends Plugin {
     private static final long FADE_MS = 180;
     // Below this luminance the bar is dark enough for white icons (the blue and green headers are ~0.2).
     private static final double LIGHT_ICONS_BELOW = 0.4;
+    private static final String PREFS = "system_bars";
+    private static final String PAGE_COLOR = "page_color";
+    private static final int DEFAULT_PAGE_COLOR = Color.parseColor("#F8F9FA");
+
+    /** The page background from the last visit (light or dark mode), used before the page paints. */
+    static int savedPageColor(Context context) {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(PAGE_COLOR, DEFAULT_PAGE_COLOR);
+    }
 
     private interface ColorSink {
         void apply(int color);
@@ -93,18 +102,31 @@ public class SystemBarsPlugin extends Plugin {
         return true;
     }
 
-    /** { statusColor: '#RRGGBB', navColor?: '#RRGGBB' } */
+    /** The page has drawn its first screen: the launch splash can go (see MainActivity). */
+    @PluginMethod
+    public void ready(PluginCall call) {
+        MainActivity.markPageReady();
+        call.resolve();
+    }
+
+    /** { statusColor: '#RRGGBB', navColor?: '#RRGGBB', pageColor?: '#RRGGBB' } */
     @PluginMethod
     public void setStyle(PluginCall call) {
         final int targetStatus;
         final int targetNav;
+        final Integer page;
         try {
             targetStatus = Color.parseColor(call.getString("statusColor", "#F8F9FA"));
             String nav = call.getString("navColor");
             targetNav = nav == null ? navColor : Color.parseColor(nav);
+            String pageColor = call.getString("pageColor");
+            page = pageColor == null ? null : Color.parseColor(pageColor);
         } catch (IllegalArgumentException e) {
             call.reject("Invalid colour");
             return;
+        }
+        if (page != null) {
+            getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putInt(PAGE_COLOR, page).apply();
         }
 
         getActivity().runOnUiThread(() -> {

@@ -40,6 +40,8 @@ export const showNativeNotification = async (title: string, body?: string) => {
 export type SystemBarsStyle = {
   statusColor: string;
   navColor?: string;
+  /** Page background, remembered by the APK (1.6+) and shown before the next launch paints. */
+  pageColor?: string;
 };
 
 /**
@@ -51,6 +53,16 @@ export const setNativeSystemBars = async (style: SystemBarsStyle) => {
   const { registerPlugin } = await import('@capacitor/core');
   const SystemBars = registerPlugin<{ setStyle: (s: SystemBarsStyle) => Promise<void> }>('SystemBars');
   await SystemBars.setStyle(style).catch(() => {});
+};
+
+/**
+ * Tells the APK (1.6+) the first screen has painted, so it can take down the launch splash.
+ * Older APKs reject the unknown method, which is ignored; they drop the splash on their own.
+ */
+export const setNativePageReady = async () => {
+  const { registerPlugin } = await import('@capacitor/core');
+  const SystemBars = registerPlugin<{ ready: () => Promise<void> }>('SystemBars');
+  await SystemBars.ready().catch(() => {});
 };
 
 export type NativeScanResult = { code?: string; typed?: boolean; cancelled?: boolean; error?: string };

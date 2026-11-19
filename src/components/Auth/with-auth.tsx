@@ -34,7 +34,8 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
     }
 
     if (!user || !allowed) {
-      return null; // Don't render the component if the user is not authenticated
+      // Redirecting to sign-in: keep the loader up instead of a blank screen.
+      return <BrandLoader />;
     }
 
     return <Component {...props} />;

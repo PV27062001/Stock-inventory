@@ -3,7 +3,7 @@
 import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInventory } from '@/firebase/firestore/use-inventory';
 import { getSharedBarcode, saveSharedBarcode } from '@/firebase/firestore/barcode-list';
 import { useFileUpload } from '@/firebase/storage/use-file-upload';
@@ -30,6 +30,9 @@ const units: Unit[] = ['g', 'kg', 'l', 'ml', 'units'];
 function AddItemContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // The Medicines app opens this same form at /medicines/add: medicine first, and back to Medicines.
+  const forMedicines = usePathname()?.startsWith('/medicines') ?? false;
+  const homeHref = forMedicines ? '/medicines' : '/inventory#inventory';
   // Set when a scan matches an item already in stock, which opens it here for editing.
   const [scannedItemId, setScannedItemId] = useState<string | null>(null);
   const linkedId = searchParams?.get('id') ?? null;
@@ -44,7 +47,7 @@ function AddItemContent() {
   const topUpRef = useRef(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  const [category, setCategory] = useState<'Grocery' | 'Medicine'>('Grocery');
+  const [category, setCategory] = useState<'Grocery' | 'Medicine'>(forMedicines ? 'Medicine' : 'Grocery');
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [unit, setUnit] = useState<Unit>('units');
@@ -267,8 +270,8 @@ function AddItemContent() {
         startScan();
         return;
       }
-      // Land on the Inventory section (not the default Gold rates tab).
-      router.push('/inventory#inventory');
+      // Land on the Inventory section (not the default Gold rates tab), or back in Medicines.
+      router.push(homeHref);
     } catch (error) {
       logger.error("Error saving item:", error);
       setError('Item was not saved. Please check the details and try again.');
@@ -289,7 +292,11 @@ function AddItemContent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <PageHeader title={editId ? 'Edit Inventory' : 'Add Inventory'} subtitle="Home Stock" backHref="/inventory#inventory" />
+      <PageHeader
+        title={forMedicines ? (editId ? 'Edit medicine' : 'Add medicine') : editId ? 'Edit Inventory' : 'Add Inventory'}
+        subtitle={forMedicines ? 'Medicines' : 'Home Stock'}
+        backHref={homeHref}
+      />
       <LoadingOverlay show={isSaving || isUploading} message="Saving inventory..." />
       {isScanning && <BarcodeScanner onDetected={handleScanned} onClose={() => setIsScanning(false)} notice={scannerNotice} />}
 

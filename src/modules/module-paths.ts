@@ -3,10 +3,13 @@
  * head script can use it before paint. The full app details live in `registry.ts`.
  * SPEC §5 Navigation: never hard-code a module list anywhere else.
  */
-export type ModuleId = 'personal' | 'ledger';
+export type ModuleId = 'personal' | 'medicines' | 'milk' | 'money' | 'ledger';
 
 export const MODULE_PREFIXES: { id: ModuleId; prefixes: string[] }[] = [
   { id: 'personal', prefixes: ['/inventory', '/add-item', '/add', '/alerts'] },
+  { id: 'medicines', prefixes: ['/medicines'] },
+  { id: 'milk', prefixes: ['/milk'] },
+  { id: 'money', prefixes: ['/money'] },
   { id: 'ledger', prefixes: ['/kirayabook', '/ledger'] },
 ];
 

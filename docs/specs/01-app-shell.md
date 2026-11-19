@@ -18,14 +18,19 @@ banners, and notifications.
 
 ## Key files
 - `src/modules/registry.ts`: `MODULES` (id, name, Tamil name, description, icon, `colorVar`,
-  `homePath`, bottom-nav `tabs`) and `getModule`. Ledger's Rentals tab appears only when
-  `RENTALS_ENABLED`.
+  `homePath`, bottom-nav `tabs`) and `getModule`. Launcher order: Personal, Medicines, Milk, Money,
+  Ledger. Money has tabs Month / Bills; Ledger's Rentals tab appears only when `RENTALS_ENABLED`.
+- `src/components/apps/shared.tsx`: pieces shared by Medicines, Milk and Money (`NumberDialog`
+  number-pad entry, `MonthSwitcher`, `StatTile`, `LoadingNote`, `ErrorNote`, `fieldClass`).
+  `src/lib/dates.ts`: local-time day/month keys (never `toISOString`, which is UTC) and ₹ format.
 - `src/modules/module-paths.ts`: which route prefixes belong to which app (`moduleIdForPath`), and
   `moduleScript()`, the same rule as head-script source. No React, so the layout can use it.
 - `src/app/layout.tsx`: root layout. A head script (built from `moduleScript()`) sets
   `data-module` and the `dark` class before paint; it also holds the wrapper (`overflow-x-clip`, bottom padding) and the status and
   gesture-bar strips.
-- `src/components/app/system-bars-sync.tsx`: sets `data-module` from the route (`moduleIdForPath`) and sends the
+- `src/components/app/system-bars-sync.tsx`: sets `data-module` from the route (`moduleIdForPath`).
+  Its first sync tells the APK the page has painted (`setNativePageReady`, ends the launch splash)
+  and every sync sends the page colour (`pageColor`) for the next launch and sends the
   status and navigation bar colours to the phone (from `#status-bar-strip` and `#app-bottom-nav`).
 - `src/components/ui/page-header.tsx`: `PageHeader` (`nav`: `back` | `apps` | `none`, actions,
   `settings`, title) plus `HeaderButton`, `BackButton`, `AppsButton`, `SettingsButton` and
@@ -36,7 +41,9 @@ banners, and notifications.
 - `src/components/ui/bottom-nav.tsx` (`#app-bottom-nav`): the current app's `tabs` from the
   registry, nothing for apps without tabs (only Ledger has them). `conditional-bottom-nav.tsx`
   shows it only when signed in.
-- `src/components/Auth/with-auth.tsx`: guards private pages; `src/lib/allowed-users.ts`.
+- `src/components/Auth/with-auth.tsx`: guards private pages; `src/lib/allowed-users.ts`. While
+  checking sign-in or redirecting to login it shows `BrandLoader` (it used to render nothing, a
+  blank screen for about a second).
 - `src/firebase/auth/*`: `AuthProvider` (user starts as `null`, filled by `onAuthStateChanged`).
 - `src/hooks/use-dark-mode.ts` (`simplestock_theme`), `use-language.tsx` (`simplestock_lang`,
   strings in `src/lib/translations.ts`), `use-start-page.ts` (`start-page`: `apps` (default, not

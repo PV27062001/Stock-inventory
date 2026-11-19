@@ -33,12 +33,24 @@
     /* One colour per app (src/modules/registry.ts `colorVar`); the launcher tiles use them. */
     --module-personal: 214 82% 51%; /* blue */
     --module-ledger: 137 65% 34%;   /* green */
+    --module-medicines: 345 70% 42%; /* rose */
+    --module-milk: 192 85% 30%;     /* teal */
+    --module-money: 262 52% 47%;    /* purple */
     /* Top app bar + status bar. Must stay dark enough for white status icons, in both themes.
        Blue (Personal) is also the bar of the Apps launcher and Settings. */
     --app-bar: var(--module-personal);
   }
   :root[data-module='ledger'] {
     --app-bar: var(--module-ledger);
+  }
+  :root[data-module='medicines'] {
+    --app-bar: var(--module-medicines);
+  }
+  :root[data-module='milk'] {
+    --app-bar: var(--module-milk);
+  }
+  :root[data-module='money'] {
+    --app-bar: var(--module-money);
   }
   .dark {
     --background: 222 18% 11%;

@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { isNativeApp, setNativeSystemBars } from '@/lib/native';
+import { isNativeApp, setNativePageReady, setNativeSystemBars } from '@/lib/native';
 import { moduleIdForPath } from '@/modules/module-paths';
 
 /**
@@ -29,6 +29,9 @@ const setThemeColor = (hex: string) => {
   meta.content = hex;
 };
 
+// Once per app launch: the first sync runs after the first screen has painted.
+let pageReadySent = false;
+
 export function SystemBarsSync() {
   const pathname = usePathname();
 
@@ -53,13 +56,18 @@ export function SystemBarsSync() {
       // id: a page's own fixed element (such as the A-Z index on Customers) must never be picked.
       const base = document.getElementById('app-bottom-nav') ?? document.body;
       const navColor = toHex(getComputedStyle(base).backgroundColor) ?? statusColor;
-      const key = statusColor + navColor;
+      const pageColor = toHex(getComputedStyle(document.body).backgroundColor) ?? undefined;
+      if (native && !pageReadySent) {
+        pageReadySent = true;
+        setNativePageReady();
+      }
+      const key = statusColor + navColor + pageColor;
       if (key === last) return;
       last = key;
 
       document.documentElement.style.setProperty('--nav-bar-color', navColor);
       setThemeColor(statusColor);
-      if (native) setNativeSystemBars({ statusColor, navColor });
+      if (native) setNativeSystemBars({ statusColor, navColor, pageColor });
     };
 
     const schedule = () => {

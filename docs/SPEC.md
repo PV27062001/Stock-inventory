@@ -22,21 +22,27 @@ Paste this, with the module filled in:
 | [05-ledger-customers](specs/05-ledger-customers.md) | Ledger home, customer book, customer detail, add/edit customer, photos, search |
 | [06-ledger-inventory](specs/06-ledger-inventory.md) | Shop's rentable items |
 | [07-rentals-and-bills](specs/07-rentals-and-bills.md) | Rentals, payments, bills (feature flag, currently off) |
-| [08-android-app](specs/08-android-app.md) | Capacitor shell, native plugins, APK build and release |
+| [08-android-app](specs/08-android-app.md) | Capacitor shell, launch splash, native plugins, APK build and release |
+| [09-medicines](specs/09-medicines.md) | Today's doses, pills left, refills (uses the medicines in Personal stock) |
+| [10-milk](specs/10-milk.md) | Daily milk, month calendar, milk bill and payment |
+| [11-money](specs/11-money.md) | Monthly bills, income and spending, month balance |
 
 ## 2. Product
 
 A family app for a small Tamil Nadu shop (Sri Amman), used mostly by the owner's parents on Android
 phones. It is a set of **apps (modules) in one launcher**: the Apps screen (`/apps`) shows each one
-as a big icon, Play Store style, and the user picks which one opens first. Today there are two:
+as a big icon, Play Store style, and the user picks which one opens first. Today there are five:
 
 - **Personal** (blue): the family's home stock of groceries and medicines, with alerts, plus gold
   and silver rates and power shutdown news.
+- **Medicines** (rose, `/medicines`): today's doses with a Taken button, pills and days left,
+  refills. It uses the `Medicine` items of Personal stock, so medicines are entered once.
+- **Milk** (teal, `/milk`): one tap for today's milk, a month calendar, the month bill.
+- **Money** (purple, `/money`): monthly bills, income and spending, the month's balance.
 - **Ledger** (green, routes under `/kirayabook`): the shop's customer book and rentable items.
   Rentals and bills exist behind a flag that is currently off.
 
-More apps (Diet next, then Medicines, Milk, Bills & income) are added one at a time through the
-module registry (§5 Navigation). Multi-family accounts are a proposal only
+More apps (Diet next) are added one at a time through the module registry (§5 Navigation). Multi-family accounts are a proposal only
 ([PLATFORM-ARCHITECTURE.md](PLATFORM-ARCHITECTURE.md)), not built.
 
 **The main users can type numbers but not letters.** Prefer the number pad, scanning and tapping;
@@ -69,12 +75,15 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 | Collection | Owner | Used by |
 |---|---|---|
 | `inventory` | per user (`userId`) | 02 personal stock |
-| `users/{uid}/…` | per user | 02 receipt-scanned items |
+| `users/{uid}/…` | per user | 02 receipt-scanned items; 09 `medicineDoses`; 10 `milkSettings`, `milkEntries`, `milkPayments`; 11 `bills`, `billPayments`, `moneyEntries` |
 | `barcodes/{code}` | shared by allowed accounts | 03 family barcode list |
 | `kirayabook_customers` | shared | 05, 07 |
 | `kirayabook_inventory` | shared | 06, 07 |
 | `kirayabook_rentals` | shared | 07 |
 
+- Medicines, Milk and Money keep their data under `users/{uid}/…`, which the existing rule
+  already limits to that account, so they needed no rules change. Each family account sees only
+  its own Milk and Money; they are not shared between the parents' accounts.
 - Everything else is denied in `firestore.rules`. The rules have no deploy config, so publish
   them by hand in the Firebase Console after every change.
 - Photos are compressed JPEG **data URLs stored inside documents** (1 MiB document limit). They
@@ -90,7 +99,8 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
 - Use only theme tokens from `globals.css` (`background`, `card`, `foreground`, `primary`, `muted`,
   `border`, `destructive`, `brand-green`, `brand-amber`). No raw hex colours in new code.
 - Each app has a colour token `--module-<id>`; `--app-bar` is the current app's colour (blue
-  Personal, green Ledger, from `data-module`; blue on the launcher and Settings). It stays dark
+  Personal, rose Medicines, teal Milk, purple Money, green Ledger, from `data-module`; blue on the
+  launcher and Settings). Every app colour must be dark enough for white status-bar icons. It stays dark
   enough for white status-bar icons in both themes.
 - Dark mode must work on every screen. Check new work in light and dark.
 
@@ -138,6 +148,13 @@ Android phone ── Capacitor shell (APK) ──loads──▶ live site on Ver
   - Settings is always the last button at the top-right of the launcher and the app main screens,
     and nowhere else.
     Logout lives inside Settings, not in a menu.
+
+### Starting the app
+- The APK (1.6+) keeps its splash up until the page has painted its first screen
+  (`SystemBarsSync` calls `setNativePageReady()`), at most 8 s, so the empty WebView (black) never
+  shows. Until a page has painted, the WebView shows the page colour from the last visit.
+- A screen that is waiting (sign-in check, redirect to login, loading) shows `BrandLoader`, never a
+  blank page.
 
 ### Bottom of every screen
 - The phone's navigation-bar colour is read only from `#app-bottom-nav`. A page's own fixed
@@ -209,7 +226,11 @@ Follow the `prove-the-fix` skill for any UI, layout or mobile bug.
 - **Production currently contains test code** (`zzuser`, `zzmock`: login bypass) from a manual
   deploy made while a test harness was applied. Redeploy production from a clean folder.
 - Not yet proven on a real phone: the number pad, the photo viewer, the top-bar buttons, the Apps
-  launcher, the start screen choice and the back key from the launcher. The APK
+  launcher, the start screen choice, the back key from the launcher, the Medicines / Milk / Money
+  screens, and APK 1.6's launch splash (no emulator image is installed, so native code is
+  untested until it runs on the phone).
+- APK 1.6 (build 7) is built in `deploy/` but not yet shared; `app-version.json` `latestBuild`
+  stays at 2 until it is. The APK
   1.5 scanner was confirmed working on the owner's phone on 12 Nov 2026.
 - The `barcodes` block in `firestore.rules` must be published by hand.
 - Dark mode on Ledger: Ledger home was measured dark with a realistic sign-in. An earlier "Ledger

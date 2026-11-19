@@ -4,6 +4,10 @@
 > [SPEC.md](SPEC.md). This file shows where it is going: one secure app that many families can
 > use, with a family manager who adds people the way YouTube Premium Family does.
 >
+> **Built so far (19 Nov 2026):** the Apps launcher and module registry (diagram H), and simple
+> per-account versions of Medicines, Milk and Money (specs 09–11), stored under `users/{uid}/…`.
+> Households, family members and sharing below are still a proposal.
+>
 > To see the diagrams in VS Code, open this file and press **Ctrl+Shift+V** (Markdown preview).
 > If they show as code, install the "Markdown Preview Mermaid Support" extension
 > (`bierner.markdown-mermaid`). GitHub renders them without any extension.

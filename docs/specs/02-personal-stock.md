@@ -36,6 +36,9 @@ expires, and medicine reminders.
 
 ## Rules
 - Follow SPEC §5. Number fields use the number pad.
+- `Medicine` items are also the Medicines app's list (09). `/medicines/add` re-exports this form:
+  on that path it starts on Medicine, is titled "Add medicine", and returns to `/medicines`.
+  Taking a dose in Medicines lowers the item's `quantity` by one.
 - Routes `/inventory`, `/add-item`, `/add` and `/alerts` belong to Personal in
   `src/modules/module-paths.ts`. After saving on `/add` or tapping an alert, go to `/inventory`,
   not `/` (which now opens the start app).

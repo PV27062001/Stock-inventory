@@ -1,4 +1,4 @@
-import { BookCheck, BookOpen, Users, Warehouse, Package2, type LucideIcon } from 'lucide-react';
+import { BookCheck, BookOpen, CalendarDays, Milk, Package2, Pill, Receipt, Users, Wallet, Warehouse, type LucideIcon } from 'lucide-react';
 import { RENTALS_ENABLED } from '@/lib/features';
 import type { ModuleId } from './module-paths';
 
@@ -38,6 +38,37 @@ export const MODULES: ModuleDef[] = [
     icon: Package2,
     colorVar: '--module-personal',
     homePath: '/inventory',
+  },
+  {
+    id: 'medicines',
+    name: 'Medicines',
+    nameTa: 'மருந்துகள்',
+    description: "Today's doses, pills left & refills",
+    icon: Pill,
+    colorVar: '--module-medicines',
+    homePath: '/medicines',
+  },
+  {
+    id: 'milk',
+    name: 'Milk',
+    nameTa: 'பால் கணக்கு',
+    description: 'Daily milk & monthly bill',
+    icon: Milk,
+    colorVar: '--module-milk',
+    homePath: '/milk',
+  },
+  {
+    id: 'money',
+    name: 'Money',
+    nameTa: 'வரவு செலவு',
+    description: 'Bills, income & spending',
+    icon: Wallet,
+    colorVar: '--module-money',
+    homePath: '/money',
+    tabs: [
+      { href: '/money', icon: CalendarDays, label: 'Month' },
+      { href: '/money/bills', icon: Receipt, label: 'Bills' },
+    ],
   },
   {
     id: 'ledger',
