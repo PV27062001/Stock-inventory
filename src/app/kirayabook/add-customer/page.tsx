@@ -2,15 +2,17 @@
 
 import { logger } from '@/lib/logger';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { addCustomer } from '@/firebase/kirayabook/firestore-service';
+import { addCustomer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
+import { PhotoPicker } from '@/components/kirayabook/photo-picker';
 import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function AddCustomerPage() {
@@ -33,10 +35,6 @@ export default function AddCustomerPage() {
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const aadhaarInputRef = useRef<HTMLInputElement>(null);
-  const panInputRef = useRef<HTMLInputElement>(null);
-  const licenceInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
     if (!name) {
@@ -77,7 +75,7 @@ export default function AddCustomerPage() {
 
       router.push('/kirayabook');
     } catch (e) {
-      setError('Failed to save customer. Please try again.');
+      setError(e instanceof CustomerTooLargeError ? e.message : 'Failed to save customer. Please try again.');
       logger.error(e);
     }
     setIsSaving(false);
@@ -88,23 +86,21 @@ export default function AddCustomerPage() {
     : PROFESSIONS;
 
   return (
-    <div className="p-4 bg-background min-h-screen text-foreground">
-      <header className="flex items-center mb-8">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-xl font-bold ml-4">Add New Customer</h1>
-      </header>
+    <div className="bg-background min-h-screen text-foreground">
+      <PageHeader title="Add New Customer" />
 
-      <div className="space-y-6">
+      <div className="space-y-6 p-4">
         <div className="flex justify-center mb-8">
-            <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
-            <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border shadow-soft transition-shadow hover:shadow-elevated">
-                {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-8 h-8 mb-1"/><span className='text-xs'>Upload Photo</span></>}
+            <PhotoPicker title="Customer photo" onPick={setPhotoFile}>
+              {(open) => (
+            <button onClick={open} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border shadow-soft transition-shadow hover:shadow-elevated">
+                {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Add Photo</span></>}
             </button>
+            )}
+            </PhotoPicker>
         </div>
 
-        <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
+        <Input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
         <MobileField
           value={mobile}
           onChange={setMobile}
@@ -120,7 +116,7 @@ export default function AddCustomerPage() {
             onFocus={() => setShowProfessionSuggestions(true)}
             onBlur={() => setTimeout(() => setShowProfessionSuggestions(false), 150)}
             autoComplete="off"
-            className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated"
+            className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated"
           />
           {showProfessionSuggestions && professionSuggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-xl border border-border bg-card shadow-elevated">
@@ -139,34 +135,37 @@ export default function AddCustomerPage() {
             </div>
           )}
         </div>
-        <Input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
+        <Input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
         
         <div className='flex items-center gap-2'>
-            <Input placeholder="Aadhaar Number" value={aadhaar} onChange={(e) => setAadhaar(e.target.value)} className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={aadhaarInputRef} onChange={e => setAadhaarFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="h-14 w-14 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <Input placeholder="Aadhaar Number" value={aadhaar} onChange={(e) => setAadhaar(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
+            <PhotoPicker title="Aadhaar photo" onPick={setAadhaarFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Aadhaar photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {aadhaarFile && <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg mt-2" />}
 
         <div className='flex items-center gap-2'>
-            <Input placeholder="PAN Number" value={pan} onChange={(e) => setPan(e.target.value)} className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={panInputRef} onChange={e => setPanFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="h-14 w-14 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <Input placeholder="PAN Number" value={pan} onChange={(e) => setPan(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
+            <PhotoPicker title="PAN photo" onPick={setPanFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add PAN photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {panFile && <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg mt-2" />}
 
         <div className='flex items-center gap-2'>
-            <Input placeholder="Driving Licence / ID Number" value={licence} onChange={(e) => setLicence(e.target.value)} className="bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
-            <input type="file" accept="image/*" ref={licenceInputRef} onChange={e => setLicenceFile(e.target.files?.[0] || null)} className="hidden" />
-            <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="h-14 w-14 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+            <Input placeholder="Driving Licence / ID Number" value={licence} onChange={(e) => setLicence(e.target.value)} className="bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated" />
+            <PhotoPicker title="Licence / ID photo" onPick={setLicenceFile}>
+              {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Licence / ID photo" className="h-12 w-12 rounded-xl border-border/60 bg-card shadow-soft hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+            </PhotoPicker>
         </div>
         {licenceFile && <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg mt-2" />}
       </div>
 
-      {error && <p className="text-destructive text-sm mt-4 text-center">{error}</p>}
+      {error && <p className="text-destructive text-sm px-4 text-center">{error}</p>}
 
-      <div className="mt-10">
-        <Button onClick={handleSave} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-14 rounded-xl text-lg shadow-primary-glow transition-shadow">
+      <div className="p-4">
+        <Button onClick={handleSave} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-12 rounded-xl text-base shadow-primary-glow transition-shadow">
           {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving…</> : 'Save Customer'}
         </Button>
       </div>

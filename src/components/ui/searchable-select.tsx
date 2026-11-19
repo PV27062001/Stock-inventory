@@ -99,7 +99,7 @@ export function SearchableSelect({
             }
           }}
           placeholder={placeholder}
-          className="h-14 rounded-lg border-border bg-card pl-10 text-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary"
+          className="h-12 rounded-lg border-border bg-card pl-10 text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -118,7 +118,7 @@ export function SearchableSelect({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(option)}
                   className={cn(
-                    'flex min-h-14 w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0',
+                    'flex min-h-12 w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0',
                     isHighlighted ? 'bg-secondary' : 'bg-card'
                   )}
                 >

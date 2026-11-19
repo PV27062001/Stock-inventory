@@ -16,6 +16,7 @@ export interface InventoryItem {
 
   // Grocery-specific fields
   unit?: Unit;
+  barcode?: string; // scanned EAN / UPC, so the same product is recognised next time
 
   // Medicine-specific fields
   dosage?: number; // e.g., pills per day

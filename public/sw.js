@@ -1,5 +1,12 @@
-// Simple offline-first service worker for the PWA.
-const CACHE = 'sriamman-v2';
+// Simple offline-capable service worker for the browser-installed PWA.
+// (The Android app doesn't use it; it always loads the live site.)
+//
+// Update rules, so a new deploy shows up without reinstalling:
+// - /_next/static/* file names change with every build, so they are safe to cache forever.
+// - Everything else (pages, Next.js screen data, public files) is network-first and only
+//   falls back to the cache when offline.
+// - Next.js screen data (?_rsc= / RSC header) and /api/* are never cached.
+const CACHE = 'sriamman-v3';
 
 // Pre-cache the app entry so it can open with no network.
 self.addEventListener('install', (event) => {
@@ -20,6 +27,18 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+const isNextData = (request, url) =>
+  url.searchParams.has('_rsc') ||
+  request.headers.get('RSC') === '1' ||
+  request.headers.has('Next-Router-State-Tree') ||
+  request.headers.has('Next-Router-Prefetch');
+
+const putInCache = (request, response) => {
+  if (!response || !response.ok || response.type === 'opaque') return;
+  const copy = response.clone();
+  caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
+};
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -27,35 +46,36 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   // Only handle same-origin requests; let Firebase and external APIs go to network directly.
   if (url.origin !== self.location.origin) return;
-  // Never cache API routes (live rates / news) — always hit the network.
+  // Never cache API routes (live rates / news) or Next.js screen data — always hit the network.
   if (url.pathname.startsWith('/api/')) return;
+  if (isNextData(request, url)) return;
+  // Always check the server for a newer Android app version.
+  if (url.pathname === '/app-version.json') return;
 
-  // Page navigations: network-first, fall back to cache so the app still opens offline.
-  if (request.mode === 'navigate') {
+  // Build files: name changes per build, so cache-first is safe and fast.
+  if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            putInCache(request, response);
+            return response;
+          })
+      )
     );
     return;
   }
 
-  // Static assets (JS/CSS/fonts/images): cache-first for speed, then network.
+  // Pages and public files: network-first, fall back to cache so the app still opens offline.
   event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request)
-          .then((response) => {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
-            return response;
-          })
-          .catch(() => cached)
-    )
+    fetch(request)
+      .then((response) => {
+        putInCache(request, response);
+        return response;
+      })
+      .catch(() =>
+        caches.match(request).then((cached) => cached || (request.mode === 'navigate' ? caches.match('/') : undefined))
+      )
   );
 });

@@ -4,9 +4,10 @@ import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getCustomerById, updateCustomer, Customer } from '@/firebase/kirayabook/firestore-service';
+import { getCustomerById, updateCustomer, Customer, CustomerTooLargeError } from '@/firebase/kirayabook/firestore-service';
 import { uploadFile } from '@/firebase/kirayabook/storage-service'; // Assuming this exists and works
-import { ArrowLeft, Camera, Upload, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMemo } from 'react'; // Import useMemo
@@ -15,6 +16,8 @@ import { BrandLoader } from '@/components/app/brand-loader';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 import { PROFESSIONS } from '@/lib/professions';
 import { MobileField } from '@/components/kirayabook/mobile-field';
+import { PhotoPicker } from '@/components/kirayabook/photo-picker';
+import { IdCardViewer } from '@/components/app/id-card-viewer';
 import { isValidMobile, mobileError } from '@/lib/phone';
 
 export default function EditCustomerPage() {
@@ -33,10 +36,6 @@ export default function EditCustomerPage() {
   const [panFile, setPanFile] = useState<File | null>(null);
   const [licenceFile, setLicenceFile] = useState<File | null>(null);
 
-  const photoInputRef = React.useRef<HTMLInputElement>(null);
-  const aadhaarInputRef = React.useRef<HTMLInputElement>(null);
-  const panInputRef = React.useRef<HTMLInputElement>(null);
-  const licenceInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!customerId) {
@@ -99,7 +98,7 @@ export default function EditCustomerPage() {
         setIsSaving(false);
         router.back();
     } catch (e) {
-        setError('Failed to save changes. Please try again.');
+        setError(e instanceof CustomerTooLargeError ? e.message : 'Failed to save changes. Please try again.');
         logger.error(e);
         setIsSaving(false);
     }
@@ -120,20 +119,18 @@ export default function EditCustomerPage() {
 
   return (
     <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
-        <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-xl font-bold ml-4">Edit Customer</h1>
-        </header>
+        <PageHeader title="Edit Customer" />
 
         <main className="p-4 pb-44">
             <div className="space-y-4">
                 <div className="flex justify-center mb-8">
-                    <input type="file" accept="image/*" ref={photoInputRef} onChange={e => setPhotoFile(e.target.files?.[0] || null)} className="hidden" />
-                    <button onClick={() => photoInputRef.current?.click()} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
-                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-8 h-8 mb-1"/><span className='text-xs'>Upload Photo</span></>)}
+                    <PhotoPicker title="Customer photo" onPick={setPhotoFile}>
+                      {(open) => (
+                    <button onClick={open} className="w-32 h-32 rounded-full bg-card flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border">
+                        {photoFile ? <img src={URL.createObjectURL(photoFile)} alt="Preview" className='w-full h-full object-cover rounded-full'/> : (isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="Customer Photo" className='w-full h-full object-cover rounded-full'/> : <><Camera className="w-6 h-6 mb-1"/><span className='text-xs'>Add Photo</span></>)}
                     </button>
+                    )}
+                    </PhotoPicker>
                 </div>
 
                  <div>
@@ -154,7 +151,7 @@ export default function EditCustomerPage() {
                             }))
                         }
                         showError={!!error}
-                        className="bg-background border-border rounded-lg text-base h-14 w-full px-4"
+                        className="bg-background border-border rounded-lg text-base h-12 w-full px-4"
                     />
                 </div>
                 <div className="relative">
@@ -194,12 +191,13 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">Aadhaar</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.aadhaar || ''} onChange={(e) => handleInputChange('aadhaar', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={aadhaarInputRef} onChange={e => setAadhaarFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => aadhaarInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="Aadhaar photo" onPick={setAadhaarFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Aadhaar photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {aadhaarFile ? <img src={URL.createObjectURL(aadhaarFile)} alt="Aadhaar Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.aadhaarPhotoUrl && <a href={customer.aadhaarPhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.aadhaarPhotoUrl} alt="Uploaded Aadhaar" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.aadhaarPhotoUrl && <IdCardViewer url={customer.aadhaarPhotoUrl} label="Aadhaar" />) }
                     </div>
                 </div>
 
@@ -207,12 +205,13 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">PAN</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.pan || ''} onChange={(e) => handleInputChange('pan', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={panInputRef} onChange={e => setPanFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => panInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="PAN photo" onPick={setPanFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add PAN photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {panFile ? <img src={URL.createObjectURL(panFile)} alt="PAN Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.panPhotoUrl && <a href={customer.panPhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.panPhotoUrl} alt="Uploaded PAN" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.panPhotoUrl && <IdCardViewer url={customer.panPhotoUrl} label="PAN" />) }
                     </div>
                 </div>
 
@@ -220,12 +219,13 @@ export default function EditCustomerPage() {
                     <label className="text-sm text-muted-foreground mb-2 block">Driving Licence</label>
                     <div className='flex items-center gap-2'>
                         <Input value={customer.drivingLicence || ''} onChange={(e) => handleInputChange('drivingLicence', e.target.value)} className="bg-background border-border rounded-lg text-base" />
-                        <input type="file" accept="image/*" ref={licenceInputRef} onChange={e => setLicenceFile(e.target.files?.[0] || null)} className="hidden" />
-                        <Button variant='outline' size='icon' onClick={() => licenceInputRef.current?.click()} className="border-border bg-card hover:bg-secondary"><Upload className='w-5 h-5 text-muted-foreground'/></Button>
+                        <PhotoPicker title="Licence / ID photo" onPick={setLicenceFile}>
+                          {(open) => <Button variant='outline' size='icon' onClick={open} aria-label="Add Licence / ID photo" className="border-border bg-card hover:bg-secondary shrink-0"><Camera className='w-5 h-5 text-muted-foreground'/></Button>}
+                        </PhotoPicker>
                     </div>
                     <div className='mt-2'>
                         {licenceFile ? <img src={URL.createObjectURL(licenceFile)} alt="Licence Preview" className="w-full h-auto rounded-lg" /> 
-                        : (customer.drivingLicencePhotoUrl && <a href={customer.drivingLicencePhotoUrl} target='_blank' rel='noopener noreferrer'><img src={customer.drivingLicencePhotoUrl} alt="Uploaded Licence" className="w-full h-auto rounded-lg" /></a>) }
+                        : (customer.drivingLicencePhotoUrl && <IdCardViewer url={customer.drivingLicencePhotoUrl} label="Driving Licence" />) }
                     </div>
                 </div>
             </div>
@@ -233,7 +233,7 @@ export default function EditCustomerPage() {
              {error && <p className="text-destructive text-sm mt-4 text-center mb-4">{error}</p>}
 
             <div className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
-                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-16 rounded-xl text-lg shadow-elevated">
+                <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 rounded-xl text-base shadow-elevated">
                     {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving…</> : 'Save Changes'}
                 </Button>
             </div>

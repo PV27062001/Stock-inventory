@@ -5,6 +5,7 @@ import { useAlerts, Alert } from '@/hooks/use-alerts';
 import { Card } from '@/components/ui/card';
 import { AlertTriangle, Pill, ShoppingBasket, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function AlertsPage() {
   const { alerts } = useAlerts();
@@ -28,18 +29,15 @@ export default function AlertsPage() {
   };
 
   return (
-    <main className="p-6">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Your Alerts</h1>
-        <p className="text-muted-foreground font-medium">
-          Here's what needs your attention today.
-        </p>
-      </header>
+    <>
+      <PageHeader title="Your Alerts" subtitle="Here's what needs your attention today." />
+
+      <main className="p-4">
 
       <div className="space-y-4">
         {alerts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-lg text-muted-foreground">All clear!</p>
+            <p className="text-base text-muted-foreground">All clear!</p>
             <p>You have no alerts right now.</p>
           </div>
         ) : (
@@ -68,6 +66,7 @@ export default function AlertsPage() {
           ))
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

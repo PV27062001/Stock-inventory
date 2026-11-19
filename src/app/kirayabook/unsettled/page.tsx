@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllCustomers, getUnsettledRentals, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { AppHeader } from '@/components/app/app-header';
+import { PageHeader } from '@/components/ui/page-header';
 import { BrandLoader } from '@/components/app/brand-loader';
 import Link from 'next/link';
 import { formatMobile } from '@/lib/phone';
@@ -89,11 +89,11 @@ export default function UnsettledPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader title="Unsettled Accounts" subtitle="Ledger" back backHref="/kirayabook" switchTo="inventory" />
       
-      {/* Horizontal filter chips */}
-      <div className="sticky top-[60px] z-10 bg-background/80 backdrop-blur-md border-b border-border py-3">
-        <div className="flex overflow-x-auto gap-2 px-4 no-scrollbar">
+      
+      <PageHeader title="Unsettled Accounts" subtitle="Ledger" backHref="/kirayabook">
+        {/* Filter chips live inside the header, so they stay pinned under it at any header height. */}
+        <div className="-mx-4 flex overflow-x-auto gap-2 px-4 no-scrollbar">
           <button
             onClick={() => setActiveFilter('All')}
             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
@@ -116,7 +116,7 @@ export default function UnsettledPage() {
                 {bucket.label}
                 {count > 0 && (
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                    activeFilter === bucket.label ? 'bg-white/20 text-white' : 'bg-background text-muted-foreground'
+                    activeFilter === bucket.label ? 'bg-primary-foreground text-primary' : 'bg-background text-muted-foreground'
                   }`}>
                     {count}
                   </span>
@@ -125,15 +125,15 @@ export default function UnsettledPage() {
             );
           })}
         </div>
-      </div>
+      </PageHeader>
 
       <main className="px-4 py-6 pb-24 max-w-md mx-auto space-y-8">
         {visibleRentals.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary mb-4 text-muted-foreground">
-               <AlertTriangle className="h-8 w-8" />
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-secondary mb-4 text-muted-foreground">
+               <AlertTriangle className="h-6 w-6" />
             </div>
-            <h2 className="text-xl font-bold">No pending rentals</h2>
+            <h2 className="text-lg font-bold">No pending rentals</h2>
             <p className="text-muted-foreground mt-2">There are no orders pending for this time period.</p>
           </div>
         ) : (
@@ -145,7 +145,7 @@ export default function UnsettledPage() {
             return (
               <section key={bucket.label} className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <h2 className={`text-lg font-bold ${bucket.color}`}>{bucket.label}</h2>
+                  <h2 className={`text-base font-bold ${bucket.color}`}>{bucket.label}</h2>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${bucket.bg} ${bucket.color}`}>
                     {bucketRentals.length}
                   </span>
@@ -160,14 +160,14 @@ export default function UnsettledPage() {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-bold text-lg">{rental.customerName}</h3>
+                          <h3 className="font-bold text-base">{rental.customerName}</h3>
                           <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-0.5">
                             <Phone className="h-3.5 w-3.5" />
                             {formatMobile(rental.customerMobile)}
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-destructive text-lg">₹{rental.balanceDue}</p>
+                          <p className="font-bold text-destructive text-base">₹{rental.balanceDue}</p>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending</p>
                         </div>
                       </div>

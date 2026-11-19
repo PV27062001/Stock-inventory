@@ -3,8 +3,7 @@ import {
   orderBy, limit, startAfter, Timestamp, getAggregateFromServer, sum,
   type QueryConstraint, type QueryDocumentSnapshot,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { firestore, storage } from '@/firebase/setup';
+import { firestore } from '@/firebase/setup';
 import { logger } from '@/lib/logger';
 import { RENTALS_ENABLED } from '@/lib/features';
 
@@ -61,7 +60,26 @@ export interface Customer {
   drivingLicencePhotoUrl?: string;
 }
 
+// Firestore rejects documents over 1 MiB. Photos are stored inside the customer document,
+// so check before writing and give a clear message instead of a generic failure.
+const CUSTOMER_DOC_LIMIT_BYTES = 1_000_000;
+
+export class CustomerTooLargeError extends Error {
+  constructor(bytes: number) {
+    super(`Photos are too large to save together (${Math.round(bytes / 1024)} KB of ${Math.round(CUSTOMER_DOC_LIMIT_BYTES / 1024)} KB). Retake one or more photos a little further away and try again.`);
+    this.name = 'CustomerTooLargeError';
+  }
+}
+
+const assertCustomerFits = (data: Partial<Customer>) => {
+  const bytes = new TextEncoder().encode(JSON.stringify(data)).length;
+  if (bytes > CUSTOMER_DOC_LIMIT_BYTES) {
+    throw new CustomerTooLargeError(bytes);
+  }
+};
+
 export const addCustomer = async (customerData: Omit<Customer, 'id'>): Promise<void> => {
+  assertCustomerFits(customerData);
   try {
     await addDoc(collection(firestore, CUSTOMERS_COLLECTION), customerData);
     invalidateCustomersCache();
@@ -125,6 +143,7 @@ export const getCustomerById = async (customerId: string): Promise<Customer | nu
 };
 
 export const updateCustomer = async (customerId: string, updates: Partial<Customer>): Promise<void> => {
+  assertCustomerFits(updates);
   try {
     const docRef = doc(firestore, CUSTOMERS_COLLECTION, customerId);
     await updateDoc(docRef, updates);
@@ -354,15 +373,6 @@ export const deleteRental = async (rentalId: string): Promise<void> => {
   }
 };
 
-// --- Storage Functions ---
-export const uploadFile = async (file: File): Promise<string> => {
-    const storageRef = ref(storage, `files/${Date.now()}_${file.name}`);
-    try {
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error) {
-        logger.error("Error uploading file: ", error);
-        throw new Error('Failed to upload file.');
-    }
-};
+// ID/customer photos are stored inside the customer document (see storage-service.ts),
+// never as public Storage download links.
+

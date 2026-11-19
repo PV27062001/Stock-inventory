@@ -40,7 +40,7 @@ export function MobileField({
 
   const inputClass =
     className ??
-    'bg-card border border-border/60 h-14 rounded-xl text-lg w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated';
+    'bg-card border border-border/60 h-12 rounded-xl text-base w-full px-4 placeholder:text-muted-foreground shadow-soft transition-shadow focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary focus-visible:shadow-elevated';
 
   return (
     <div className="space-y-2">

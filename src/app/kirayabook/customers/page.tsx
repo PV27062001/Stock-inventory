@@ -4,12 +4,14 @@ import { logger } from '@/lib/logger';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Phone, Search, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
+import { Plus, Phone, Sparkles, UserPlus, Users, MessageCircle, X, CheckCircle2, AlertTriangle, Star } from 'lucide-react';
 import { formatMobile, isVerificationStale, toCallNumber, toWhatsAppNumber } from '@/lib/phone';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Customer, getAllCustomers } from '@/firebase/kirayabook/firestore-service';
 import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
+import { ModuleHeader } from '@/components/ui/module-header';
+import { HeaderButton } from '@/components/ui/page-header';
+import { NumberSearch } from '@/components/app/number-search';
 
 const FAVOURITES_KEY = 'kirayabook.customers.favourites';
 const RECENTS_KEY = 'kirayabook.customers.recents';
@@ -205,44 +207,32 @@ export default function CustomersPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="bg-card sticky top-0 z-10 border-b border-border flex items-center justify-between px-4 py-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">KirayaBook</p>
-          <h1 className="text-2xl font-bold">Customers</h1>
-        </div>
-        <Link href="/kirayabook/add-customer">
-          <Button className="rounded-full">
-            <Plus className="w-4 h-4 mr-1" /> Add new
-          </Button>
-        </Link>
-      </header>
+      <ModuleHeader
+        title="Customers"
+        subtitle="Ledger"
+        right={<HeaderButton icon={Plus} label="Add" href="/kirayabook/add-customer" />}
+      />
 
       <main className="max-w-md mx-auto px-4 py-4 pb-24">
         <section className="grid grid-cols-2 gap-3 mb-4">
           <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
             <div className="flex items-center gap-2 text-primary">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15"><Users className="w-4 h-4" /></div>
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/15"><Users className="w-4 h-4" /></div>
               <span className="text-xs font-semibold uppercase tracking-wide">Total</span>
             </div>
-            <p className="mt-2 text-3xl font-bold">{customers.length}</p>
+            <p className="mt-2 text-[22px] font-bold">{customers.length}</p>
           </div>
           <Link href="/kirayabook/add-customer" className="rounded-2xl border border-brand-green/20 bg-gradient-to-br from-brand-green/10 to-transparent p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated">
             <div className="flex items-center gap-2 text-brand-green">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-green/15"><UserPlus className="w-4 h-4" /></div>
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-green/15"><UserPlus className="w-4 h-4" /></div>
               <span className="text-xs font-semibold uppercase tracking-wide">Fast add</span>
             </div>
             <p className="mt-2 text-sm font-semibold text-foreground">New customer</p>
           </Link>
         </section>
 
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, mobile or profession"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-12 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
+        <div className="mb-6">
+          <NumberSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
 
         {showQuickSections && favourites.length > 0 && (
@@ -274,11 +264,11 @@ export default function CustomersPage() {
             ))}
           </div>
         ) : displayedCustomers.length === 0 ? (
-          <div className="bg-card border border-border rounded-lg p-6 text-center">
+          <div className="bg-card border border-border rounded-lg p-4 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
               <Sparkles className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-bold text-foreground">
+            <h2 className="text-base font-bold text-foreground">
               {searchTerm ? 'No matching customers' : 'Build your customer book'}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -330,7 +320,7 @@ export default function CustomersPage() {
       {/* WhatsApp-style photo viewer with quick call / message actions */}
       {viewer && (
         <div
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-6"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 p-4"
           onClick={() => setViewer(null)}
         >
           <button
@@ -354,7 +344,7 @@ export default function CustomersPage() {
                 {getInitials(viewer.name)}
               </div>
             )}
-            <h3 className="mt-5 text-xl font-bold text-white">{viewer.name}</h3>
+            <h3 className="mt-5 text-lg font-bold text-white">{viewer.name}</h3>
             <p className="text-sm text-white/70">{viewer.mobile}</p>
 
             <div className="mt-6 flex items-center gap-4">
@@ -363,8 +353,8 @@ export default function CustomersPage() {
                 className="flex flex-col items-center gap-2 text-white"
                 aria-label="Call"
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary shadow-elevated active:scale-95">
-                  <Phone className="h-7 w-7" />
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-elevated active:scale-95">
+                  <Phone className="h-6 w-6" />
                 </span>
                 <span className="text-sm font-medium">Call</span>
               </a>
@@ -375,8 +365,8 @@ export default function CustomersPage() {
                 className="flex flex-col items-center gap-2 text-white"
                 aria-label="WhatsApp"
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] shadow-elevated active:scale-95">
-                  <MessageCircle className="h-7 w-7" />
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-elevated active:scale-95">
+                  <MessageCircle className="h-6 w-6" />
                 </span>
                 <span className="text-sm font-medium">WhatsApp</span>
               </a>

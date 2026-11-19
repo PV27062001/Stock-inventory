@@ -16,6 +16,7 @@ import { processReceipt } from '@/ai/flows/receipt-processor';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { withAuth } from '@/components/Auth/with-auth';
+import { PageHeader, headerButtonClass } from '@/components/ui/page-header';
 
 function AddItemPage() {
   const { t } = useLanguage();
@@ -87,9 +88,10 @@ function AddItemPage() {
   };
 
   return (
-    <main className="p-6 pb-24">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">{t('addItem')}</h1>
+    <>
+      <PageHeader
+        title={t('addItem')}
+        actions={
         <div className="relative">
           <Input 
             type="file" 
@@ -101,34 +103,36 @@ function AddItemPage() {
           />
           <Label 
             htmlFor="receipt-upload" 
-            className="flex items-center gap-2 bg-primary/10 text-primary px-4 h-12 rounded-xl font-bold cursor-pointer hover:bg-primary/20 transition-colors"
+            className={`${headerButtonClass()} cursor-pointer`}
           >
-            {isScanning ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+            {isScanning ? <Loader2 className="animate-spin" /> : <Camera />}
             {t('scanReceipt')}
           </Label>
         </div>
-      </div>
+        }
+      />
 
-      <Card className="p-6 space-y-6 border-none shadow-sm">
+      <main className="p-4">
+      <Card className="p-4 space-y-6 border-none shadow-sm">
         <div className="space-y-4">
-          <Label htmlFor="name" className="text-lg font-semibold">{t('itemName')}</Label>
+          <Label htmlFor="name" className="text-base font-semibold">{t('itemName')}</Label>
           <Input 
             id="name" 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Milk, Paracetamol" 
-            className="h-16 text-lg rounded-xl bg-muted/50 border-none px-5"
+            className="h-12 text-base rounded-xl bg-muted/50 border-none px-5"
           />
         </div>
 
         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-2xl">
-          <Label htmlFor="is-med" className="text-lg font-semibold">{t('isMedicine')}</Label>
+          <Label htmlFor="is-med" className="text-base font-semibold">{t('isMedicine')}</Label>
           <Switch id="is-med" checked={isMedicine} onCheckedChange={setIsMedicine} />
         </div>
 
         {isMedicine && (
           <div className="space-y-4 p-4 bg-primary/5 rounded-2xl border border-primary/10 animate-in fade-in slide-in-from-top-2">
-            <Label className="text-lg font-semibold flex items-center gap-2">
+            <Label className="text-base font-semibold flex items-center gap-2">
               {t('dosage')}
             </Label>
             <div className="flex items-center gap-4">
@@ -136,7 +140,7 @@ function AddItemPage() {
                 type="number" 
                 value={dosage}
                 onChange={(e) => setDosage(e.target.value)}
-                className="h-14 w-24 text-center text-xl font-bold rounded-xl"
+                className="h-12 w-24 text-center text-lg font-bold rounded-xl"
               />
               <span className="text-muted-foreground">{t('timesPerDay')}</span>
             </div>
@@ -145,20 +149,20 @@ function AddItemPage() {
 
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-4">
-            <Label htmlFor="qty" className="text-lg font-semibold">{t('quantity')}</Label>
+            <Label htmlFor="qty" className="text-base font-semibold">{t('quantity')}</Label>
             <Input 
               id="qty" 
               type="number" 
               value={qty}
               onChange={(e) => setQty(e.target.value)}
               placeholder="0" 
-              className="h-16 text-xl text-center font-bold rounded-xl bg-muted/50 border-none"
+              className="h-12 text-lg text-center font-bold rounded-xl bg-muted/50 border-none"
             />
           </div>
           <div className="space-y-4">
-            <Label htmlFor="unit" className="text-lg font-semibold">{t('unit')}</Label>
+            <Label htmlFor="unit" className="text-base font-semibold">{t('unit')}</Label>
             <Select value={unit} onValueChange={setUnit}>
-              <SelectTrigger id="unit" className="h-16 text-lg rounded-xl bg-muted/50 border-none px-5">
+              <SelectTrigger id="unit" className="h-12 text-base rounded-xl bg-muted/50 border-none px-5">
                 <SelectValue placeholder="Unit" />
               </SelectTrigger>
               <SelectContent>
@@ -173,22 +177,22 @@ function AddItemPage() {
         </div>
 
         <div className="space-y-4">
-          <Label className="text-lg font-semibold">{t('lowStockAlert')}</Label>
+          <Label className="text-base font-semibold">{t('lowStockAlert')}</Label>
           <div className="flex items-center gap-4">
             <Input 
               type="number" 
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
-              className="h-14 w-24 text-center text-xl font-bold rounded-xl bg-muted/50 border-none"
+              className="h-12 w-24 text-center text-lg font-bold rounded-xl bg-muted/50 border-none"
             />
             <span className="text-muted-foreground">{unit}</span>
           </div>
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="category" className="text-lg font-semibold">{t('category')}</Label>
+          <Label htmlFor="category" className="text-base font-semibold">{t('category')}</Label>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger id="category" className="h-16 text-lg rounded-xl bg-muted/50 border-none px-5">
+            <SelectTrigger id="category" className="h-12 text-base rounded-xl bg-muted/50 border-none px-5">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -205,16 +209,17 @@ function AddItemPage() {
           <Button 
             onClick={handleSave} 
             disabled={isSaving || !name || !qty}
-            className="h-20 text-2xl font-bold rounded-3xl shadow-lg"
+            className="h-12 text-xl font-bold rounded-2xl shadow-lg"
           >
             {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : t('save')}
           </Button>
-          <Button variant="ghost" onClick={() => router.back()} className="h-16 text-xl rounded-2xl text-muted-foreground">
+          <Button variant="ghost" onClick={() => router.back()} className="h-12 text-lg rounded-2xl text-muted-foreground">
             {t('cancel')}
           </Button>
         </div>
       </Card>
-    </main>
+      </main>
+    </>
   );
 }
 

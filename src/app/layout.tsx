@@ -10,6 +10,8 @@ import { AlertProvider } from '@/components/alert-provider';
 import { PWARegister } from '@/components/pwa-register';
 import { InstallBanner } from '@/components/install-banner';
 import { NotificationWatcher } from '@/components/app/notification-watcher';
+import { AppUpdateBanner } from '@/components/app/app-update-banner';
+import { SystemBarsSync } from '@/components/app/system-bars-sync';
 
 export const metadata: Metadata = {
   title: 'Sri Amman - Inventory & Ledger',
@@ -45,26 +47,33 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        {/* Apply saved theme before paint to avoid a flash. */}
+        {/* Apply saved theme and module colour before paint to avoid a flash. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{if(localStorage.getItem('simplestock_theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();",
+              "(function(){var r=document.documentElement;if(location.pathname.indexOf('/kirayabook')===0){r.dataset.module='ledger';}try{if(localStorage.getItem('simplestock_theme')==='dark'){r.classList.add('dark');}}catch(e){}})();",
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background min-h-screen pb-24 md:pb-0 overflow-x-hidden">
+      <body className="font-body antialiased bg-background min-h-screen overflow-x-hidden">
         <PWARegister />
         <FirebaseClientProvider>
           <AuthProvider>
             <LanguageProvider>
               <AlertProvider>
-                <div className="max-w-md mx-auto min-h-screen bg-background shadow-xl md:border-x overflow-x-hidden">
+                {/* overflow-x-clip, not hidden: hidden makes this a scroll container and silently stops every sticky app bar. */}
+                <div className="max-w-md mx-auto min-h-screen bg-background shadow-xl md:border-x overflow-x-clip pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
                   {children}
                   <ConditionalBottomNav />
                 </div>
+                {/* Solid strips behind the status bar and gesture bar, so scrolled content never shows
+                    through them on any page (height is 0 where there are no system-bar insets). */}
+                <div id="status-bar-strip" aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[env(safe-area-inset-top)] bg-[hsl(var(--app-bar))]" />
+                <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] h-[env(safe-area-inset-bottom)] bg-[var(--nav-bar-color,hsl(var(--background)))] transition-colors duration-200" />
+                <SystemBarsSync />
                 <NotificationWatcher />
                 <InstallBanner />
+                <AppUpdateBanner />
                 <Toaster />
               </AlertProvider>
             </LanguageProvider>

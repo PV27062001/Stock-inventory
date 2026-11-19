@@ -3,19 +3,17 @@
 import { logger } from '@/lib/logger';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { getAllCustomers, getRecentRentals, getRentalsByDate, getLedgerTotals, Customer, Rental } from '@/firebase/kirayabook/firestore-service';
-import { Input } from '@/components/ui/input';
-import { Search, Settings, LogOut, LayoutGrid, Plus, CalendarIcon, X } from 'lucide-react';
+import { Search, Plus, CalendarIcon, X, UserPlus, Users, Warehouse, ChevronRight, User, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ModuleHeader } from '@/components/ui/module-header';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { signOut } from '@/firebase/auth/auth-service';
+import { NumberSearch } from '@/components/app/number-search';
 import { RENTALS_ENABLED } from '@/lib/features';
+import { isUsablePhoto } from '@/firebase/kirayabook/storage-service';
 
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
@@ -31,19 +29,22 @@ const getStatusBadgeColor = (status: string) => {
 };
 
 export default function LedgerHomePage() {
-  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [customersLoading, setCustomersLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [totals, setTotals] = useState({ moneyReceived: 0, pendingAmount: 0, refundOwed: 0 });
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    getAllCustomers().then(setCustomers).catch((e) => logger.error('Failed to fetch customers:', e));
+    getAllCustomers()
+      .then(setCustomers)
+      .catch((e) => logger.error('Failed to fetch customers:', e))
+      .finally(() => setCustomersLoading(false));
     if (RENTALS_ENABLED) {
       getLedgerTotals().then(setTotals).catch((e) => logger.error('Failed to fetch totals:', e));
     }
@@ -119,32 +120,18 @@ export default function LedgerHomePage() {
       };
     });
 
+  const verifiedCount = customers.filter((c) => c.mobileVerifiedAt).length;
+  const customerPreview = [...customers].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 5);
+
+  const quickActions = [
+    { href: '/kirayabook/add-customer', icon: UserPlus, label: 'Add customer' },
+    { href: '/kirayabook/customers', icon: Users, label: 'Customers' },
+    { href: '/kirayabook/inventory', icon: Warehouse, label: 'Inventory' },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ModuleHeader
-        title="Ledger"
-        subtitle="Rental book"
-        right={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl bg-white/15 text-white hover:bg-white/25" aria-label="Menu">
-                <LayoutGrid className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-border bg-card p-2 text-foreground">
-              <DropdownMenuItem onSelect={() => router.push('/settings')} className="min-h-11 cursor-pointer rounded-md text-base focus:bg-secondary focus:text-foreground">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem onSelect={async () => { await signOut(); router.push('/login'); }} className="min-h-11 cursor-pointer rounded-md text-base text-destructive focus:bg-destructive/15 focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-      />
+      <ModuleHeader title="Ledger" subtitle="Rental book" />
 
       <main className="max-w-md mx-auto pb-24">
         {/* Stats Cards */}
@@ -152,12 +139,27 @@ export default function LedgerHomePage() {
         <div className="grid grid-cols-2 gap-4 p-4">
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
             <p className="text-xs font-semibold text-primary uppercase tracking-wide">Money Received</p>
-            <p className="text-2xl font-bold text-primary mt-2">₹{moneyReceived.toFixed(0)}</p>
+            <p className="text-xl font-bold text-primary mt-2">₹{moneyReceived.toFixed(0)}</p>
           </div>
           <Link href="/kirayabook/unsettled" className="rounded-2xl border border-destructive/20 bg-gradient-to-br from-destructive/10 to-transparent p-4 shadow-soft hover:shadow-elevated transition-shadow block active:scale-[0.98]">
             <p className="text-xs font-semibold text-destructive uppercase tracking-wide">Pending</p>
-            <p className="text-2xl font-bold text-destructive mt-2">₹{pendingAmount.toFixed(0)}</p>
+            <p className="text-xl font-bold text-destructive mt-2">₹{pendingAmount.toFixed(0)}</p>
           </Link>
+        </div>
+        )}
+
+        {!RENTALS_ENABLED && (
+        <div className="grid grid-cols-2 gap-3 p-4 pb-2">
+          <Link href="/kirayabook/customers" className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft block active:scale-[0.98]">
+            <p className="text-xs font-semibold text-primary uppercase tracking-wide">Customers</p>
+            <p className="text-xl font-bold text-primary mt-2">{customersLoading ? '–' : customers.length}</p>
+          </Link>
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+            <p className="flex items-center gap-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <BadgeCheck className="h-3.5 w-3.5" /> Mobile verified
+            </p>
+            <p className="text-xl font-bold mt-2">{customersLoading ? '–' : verifiedCount}</p>
+          </div>
         </div>
         )}
 
@@ -168,7 +170,7 @@ export default function LedgerHomePage() {
                 <p className="text-xs font-semibold text-brand-amber uppercase tracking-wide">To Return</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Owed back to customers</p>
               </div>
-              <p className="text-2xl font-bold text-brand-amber">₹{refundOwed.toFixed(0)}</p>
+              <p className="text-xl font-bold text-brand-amber">₹{refundOwed.toFixed(0)}</p>
             </div>
           </div>
         )}
@@ -176,13 +178,7 @@ export default function LedgerHomePage() {
         {/* Search */}
         <div className="relative px-4 py-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, mobile or profession"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 rounded-lg border border-border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
+            <NumberSearch value={searchTerm} onChange={setSearchTerm} />
             {searchTerm.length > 0 && searchTerm.length < 4 && (
               <p className="text-xs text-muted-foreground mt-1">Enter at least 4 characters to search</p>
             )}
@@ -214,11 +210,65 @@ export default function LedgerHomePage() {
           )}
         </div>
 
+        {/* Quick actions */}
+        <div className="grid grid-cols-3 gap-3 px-4 py-2">
+          {quickActions.map((action) => (
+            <Link key={action.href} href={action.href} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 text-center shadow-soft active:scale-[0.98]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <action.icon className="h-5 w-5" />
+              </span>
+              <span className="text-sm font-semibold leading-tight">{action.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Customers */}
+        {!RENTALS_ENABLED && (
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold">Your customers</h2>
+            {customers.length > customerPreview.length && (
+              <Link href="/kirayabook/customers" className="text-sm font-semibold text-primary">See all</Link>
+            )}
+          </div>
+          {customersLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-card" />)}
+            </div>
+          ) : customerPreview.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center">
+              <p className="font-semibold">No customers yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">Add your first customer to start your book.</p>
+              <Link href="/kirayabook/add-customer" className="mt-4 inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-4 font-semibold text-primary-foreground">
+                <UserPlus className="h-5 w-5" /> Add customer
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {customerPreview.map((customer) => (
+                <Link key={customer.id} href={`/kirayabook/customer/${customer.id}`} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-soft active:scale-[0.99]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+                    {isUsablePhoto(customer.photoUrl) ? <img src={customer.photoUrl} alt="" className="h-full w-full object-cover" /> : <User className="h-5 w-5" />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">{customer.name}</span>
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {customer.mobile}{customer.profession ? ` · ${customer.profession}` : ''}
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+
         {/* Recent Entries */}
         {RENTALS_ENABLED && (
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">
+            <h2 className="text-base font-bold">
               {selectedDate ? `Entries on ${format(selectedDate, 'dd MMM yyyy')}` : 'Recent entries'}
             </h2>
             <div className="flex items-center gap-1">
@@ -267,14 +317,14 @@ export default function LedgerHomePage() {
 
       {/* Floating add button (above the bottom nav) for quick new rental */}
       {RENTALS_ENABLED && (
-      <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-6">
+      <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
         <div className="flex justify-end">
           <Link
             href="/kirayabook/new-rental"
             aria-label="New rental"
-            className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
           >
-            <Plus className="h-8 w-8" />
+            <Plus className="h-6 w-6" />
           </Link>
         </div>
       </div>

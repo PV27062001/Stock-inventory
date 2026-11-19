@@ -7,11 +7,8 @@ import { useLanguage } from '@/hooks/use-language';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryItem } from '@/components/ui/inventory-item';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, Pill, Carrot, Coffee, Package, Search, LayoutGrid, Settings, WalletCards, LogOut, Coins, Zap, Plus } from 'lucide-react';
+import { ShoppingCart, Pill, Carrot, Coffee, Package, Search, WalletCards, Coins, Zap, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { signOut } from '@/firebase/auth/auth-service';
 import { useInventory } from '@/firebase/firestore/use-inventory';
 import { ModuleHeader } from '@/components/ui/module-header';
 import { GoldSilverRates } from '@/components/app/gold-silver-rates';
@@ -73,10 +70,6 @@ export default function InventoryPage() {
         (!search || i.name.toLowerCase().includes(search.toLowerCase())),
     );
 
-  const handleLogout = async () => {
-    await signOut();
-    router.push('/login');
-  };
 
   const handleQtyChange = (id: string, qty: number) => {
     updateItem(id, { quantity: qty }).catch(() => {});
@@ -90,30 +83,7 @@ export default function InventoryPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <ModuleHeader
-        title="Personal"
-        subtitle="Your dashboard"
-        right={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl bg-white/15 text-white hover:bg-white/25" aria-label="Menu">
-                <LayoutGrid className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 border-border bg-card p-2 text-foreground">
-              <DropdownMenuItem onSelect={() => router.push('/settings')} className="min-h-11 cursor-pointer rounded-md text-base focus:bg-secondary focus:text-foreground">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem onSelect={handleLogout} className="min-h-11 cursor-pointer rounded-md text-base text-destructive focus:bg-destructive/15 focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-      />
+      <ModuleHeader title="Personal" subtitle="Your dashboard" />
 
       <section className="mx-auto max-w-6xl space-y-6 p-4">
         {/* Section selector */}
@@ -138,9 +108,9 @@ export default function InventoryPage() {
         {section === 'inventory' && (
           <>
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                className="h-16 rounded-2xl border border-border bg-card pl-12 text-lg text-foreground shadow-sm placeholder:text-muted-foreground"
+                className="h-12 rounded-xl border border-border bg-card pl-12 text-base text-foreground shadow-sm placeholder:text-muted-foreground"
                 placeholder={t('search')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -148,15 +118,15 @@ export default function InventoryPage() {
             </div>
 
             <Tabs defaultValue="all" className="w-full">
-              <div className="-mx-6 overflow-x-auto px-6 pb-4 no-scrollbar">
-                <TabsList className="inline-flex h-auto gap-3 bg-transparent">
+              <div className="-mx-4 overflow-x-auto px-4 pb-1 no-scrollbar">
+                <TabsList className="inline-flex h-auto gap-2 bg-transparent p-0">
                   {categories.map((cat) => (
                     <TabsTrigger
                       key={cat.id}
                       value={cat.id}
-                      className="flex h-14 items-center gap-2 whitespace-nowrap rounded-2xl border border-border bg-card px-6 text-lg font-medium text-muted-foreground shadow-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-4 text-sm font-medium text-muted-foreground shadow-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
-                      <cat.icon className="h-5 w-5" />
+                      <cat.icon className="h-4 w-4" />
                       {cat.name}
                     </TabsTrigger>
                   ))}
@@ -166,12 +136,12 @@ export default function InventoryPage() {
               {categories.map((cat) => {
                 const list = visibleItems(cat.id);
                 return (
-                  <TabsContent key={cat.id} value={cat.id} className="mt-6">
+                  <TabsContent key={cat.id} value={cat.id} className="mt-4">
                     {loading ? (
                       <p className="py-16 text-center text-muted-foreground">{t('loading')}</p>
                     ) : list.length === 0 ? (
                       <div className="py-16 text-center">
-                        <p className="text-lg text-muted-foreground">{t('noItems')}</p>
+                        <p className="text-base text-muted-foreground">{t('noItems')}</p>
                         <Link href="/add-item" className="mt-2 inline-block text-primary">+ {t('addItem')}</Link>
                       </div>
                     ) : (
@@ -203,14 +173,14 @@ export default function InventoryPage() {
       </section>
 
       {section === 'inventory' && (
-        <div className="pointer-events-none fixed bottom-6 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-6">
+        <div className="pointer-events-none fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
           <div className="flex justify-end">
             <Link
               href="/add-item"
               aria-label={t('addItem')}
-              className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
+              className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated transition-transform active:scale-95"
             >
-              <Plus className="h-8 w-8" />
+              <Plus className="h-6 w-6" />
             </Link>
           </div>
         </div>

@@ -135,8 +135,8 @@ export function GoldSilverRates() {
                   i > 0 ? 'border-t border-border' : ''
                 }`}
               >
-                <span className="text-lg font-medium text-foreground">{w} gram</span>
-                <span className="text-lg font-bold text-primary">{inr(perGram * w)}</span>
+                <span className="text-base font-medium text-foreground">{w} gram</span>
+                <span className="text-base font-bold text-primary">{inr(perGram * w)}</span>
               </div>
             ))}
           </div>

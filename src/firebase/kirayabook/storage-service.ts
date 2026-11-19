@@ -2,8 +2,10 @@
 // No real cloud storage is configured, so uploaded images are compressed and stored
 // directly as base64 data URLs in Firestore. These render offline and never break.
 
-const MAX_DIMENSION = 1000;
-const JPEG_QUALITY = 0.8;
+// All of a customer's photos share one Firestore document (1 MiB limit), so keep each
+// one small: ~800px is still clearly readable for ID cards.
+const MAX_DIMENSION = 800;
+const JPEG_QUALITY = 0.75;
 
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -16,8 +18,9 @@ const readAsDataUrl = (file: File) =>
 export const uploadFile = async (file: File): Promise<string> => {
   const original = await readAsDataUrl(file);
 
-  // Only images can be downscaled; anything else is stored as-is.
-  if (!file.type.startsWith('image/')) return original;
+  // Only images can be downscaled; anything else is stored as-is. Camera files can arrive with no
+  // type, so those still go through the resize.
+  if (file.type && !file.type.startsWith('image/')) return original;
 
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {

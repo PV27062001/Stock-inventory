@@ -5,7 +5,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getRental, updateRental, Rental, RentalItem } from '@/firebase/kirayabook/firestore-service';
 import { useInventory } from '@/hooks/use-inventory';
-import { ArrowLeft, Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -115,17 +116,12 @@ function EditRentalContent() {
 
   return (
     <div className="bg-background min-h-screen text-foreground font-sans max-w-md mx-auto">
-      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="w-6 h-6" />
-            </Button>
-            <h1 className="text-xl font-bold ml-4">Edit Rental Entry</h1>
-        </header>
+      <PageHeader title="Edit Rental Entry" />
 
         <main className="p-4 pb-44">
             {/* Rented Items Section */}
             <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3">Rented Items</h2>
+                <h2 className="text-base font-semibold mb-3">Rented Items</h2>
                 <div className="space-y-3">
                 {items.map((item, index) => (
                     <div key={`${item.itemId || 'row'}-${index}`} className="flex items-center gap-2">
@@ -174,7 +170,7 @@ function EditRentalContent() {
 
         </main>
         <div className="fixed bottom-24 inset-x-0 px-4 max-w-md mx-auto z-50">
-            <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-16 rounded-xl text-lg shadow-elevated">
+            <Button onClick={handleUpdate} disabled={isSaving} className="w-full bg-primary hover:bg-emerald-600 text-primary-foreground font-bold h-12 rounded-xl text-base shadow-elevated">
                 {isSaving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Updating…</> : 'Update Rental Entry'}
             </Button>
         </div>

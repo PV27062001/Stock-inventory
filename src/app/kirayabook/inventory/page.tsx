@@ -4,9 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { getInventoryItems, addInventoryItem, updateInventoryItem, deleteInventoryItem, InventoryItem } from '@/firebase/kirayabook/inventory-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Edit, Trash, Camera } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { BrandLoader } from '@/components/app/brand-loader';
+import { Edit, Trash, Camera, Loader2 } from 'lucide-react';
+import { ModuleHeader } from '@/components/ui/module-header';
 import { itemEmoji } from '@/lib/item-emoji';
 
 // Shrink a picked photo to a small JPEG data URL so it stores cheaply in Firestore.
@@ -36,7 +35,6 @@ function fileToThumb(file: File, max = 400): Promise<string> {
 }
 
 export default function InventoryPage() {
-  const router = useRouter();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
@@ -95,34 +93,31 @@ export default function InventoryPage() {
     }
   };
 
-  if (isLoading) {
-    return <BrandLoader label="Loading inventory…" />;
-  }
-
   return (
     <div className="bg-background min-h-screen text-foreground font-sans">
-      <header className="flex items-center p-4 bg-card sticky top-0 z-10 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="w-6 h-6" />
-        </Button>
-        <h1 className="text-xl font-bold ml-4">Inventory Management</h1>
-      </header>
+      {/* Same header as the other bottom-nav tabs, so switching tabs never changes its size. */}
+      <ModuleHeader title="Inventory" subtitle="Ledger" />
 
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2 p-10 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" /> Loading inventory…
+        </div>
+      ) : (
       <main className="p-4">
         {/* Add / Edit form */}
         <div className="bg-card p-5 rounded-2xl mb-6 shadow-soft">
-          <h3 className="text-lg font-semibold mb-3">{editId ? 'Edit Item' : 'Add New Item'}</h3>
+          <h3 className="text-base font-semibold mb-3">{editId ? 'Edit Item' : 'Add New Item'}</h3>
           <div className="flex items-start gap-3">
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePickPhoto(e.target.files?.[0] || null)} />
             <button
               onClick={() => fileRef.current?.click()}
-              className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground"
+              className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-muted-foreground"
               aria-label="Add photo"
             >
               {form.imageUrl ? (
                 <img src={form.imageUrl} alt="" className="h-full w-full object-cover" />
               ) : form.name ? (
-                <span className="text-3xl">{itemEmoji(form.name)}</span>
+                <span className="text-[22px]">{itemEmoji(form.name)}</span>
               ) : (
                 <Camera className="h-6 w-6" />
               )}
@@ -189,6 +184,7 @@ export default function InventoryPage() {
           </div>
         )}
       </main>
+      )}
     </div>
   );
 }
